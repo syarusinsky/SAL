@@ -1,0 +1,27 @@
+#ifndef POLYBLEPOSC_HPP
+#define POLYBLEPOSC_HPP
+
+#include "IOscillator.hpp"
+
+class PolyBLEPOsc : public IOscillator
+{
+	public:
+		PolyBLEPOsc();
+		~PolyBLEPOsc() override;
+
+		float nextSample() override;
+		void setFrequency (float frequency) override;
+		void setOscillatorMode (const OscillatorMode& mode) override;
+		OscillatorMode getOscillatorMode() override;
+
+	private:
+		float m_Phase;
+		float m_PhaseIncr;
+		float m_LastOutput;
+		float m_LastLastOutput;
+		float m_A0;
+		float m_B1;
+		OscillatorMode m_OscMode;
+};
+
+#endif // POLYBLEPOSC_HPP
