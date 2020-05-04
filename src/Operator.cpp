@@ -522,7 +522,11 @@ void Operator::setFrequency (const float frequency)
 {
 	m_Frequency = frequency;
 
-	if (m_Frequency > 10000.0f)
+	if (m_Frequency > 15000.0f)
+	{
+		m_Ratio = 6.0f;
+	}
+	else if (m_Frequency > 10000.0f)
 	{
 		m_Ratio = 5.0f;
 	}
