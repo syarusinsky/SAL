@@ -48,6 +48,7 @@ class Operator : public IModulationSource, public IKeyEventListener, public IPit
 		void setEGModDestination (const EGModDestination& modDest, const bool on);
 		void unsetEGModDestination (const EGModDestination& modDest);
 		void setFrequency (const float frequency);
+		void setDetune (const int cents);
 		void setEGFreqModAmount (const float modAmount);
 		void setAmplitude (const float amplitude);
 		void setFilterFreq (const float frequency);
@@ -61,6 +62,7 @@ class Operator : public IModulationSource, public IKeyEventListener, public IPit
 		void setUseGlide (const bool useGlide);
 
 		float getFrequency() { return m_Frequency; }
+		int getDetune() { return m_Detune; }
 		bool egModAmplitudeSet() { if (m_EGModDestinations.count(EGModDestination::AMPLITUDE)) { return true; } return false; }
 		bool egModFrequencySet() { if (m_EGModDestinations.count(EGModDestination::FREQUENCY)) { return true; } return false; }
 		bool egModFilterSet(){ if (m_EGModDestinations.count(EGModDestination::FILT_FREQUENCY)){ return true; } return false; }
@@ -95,6 +97,7 @@ class Operator : public IModulationSource, public IKeyEventListener, public IPit
 		std::set<EGModDestination> m_EGModDestinations;
 		float         m_Amplitude;
 		float         m_Frequency;
+		int           m_Detune;
 		float         m_Ratio;
 		float         m_RatioFrequency;
 		float         m_CurrentValue;

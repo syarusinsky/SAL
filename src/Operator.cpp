@@ -15,6 +15,7 @@ Operator::Operator(IOscillator* wave, IEnvelopeGenerator* eg, IFilter* filt, flo
 	m_EGModDestinations(),
 	m_Amplitude(amplitude),
 	m_Frequency(frequency),
+	m_Detune(0),
 	m_Ratio(1.0f),
 	m_RatioFrequency(frequency),
 	m_CurrentValue(0.0f),
@@ -445,6 +446,7 @@ void Operator::onKeyEvent(const KeyEvent& keyEvent)
 		}
 
 		m_RatioFrequency *= m_Ratio;
+		m_RatioFrequency += m_RatioFrequency * pow( 2.0f, (m_Detune / 1200.0f) );
 
 		if ( !m_UseGlide || (m_UseGlideRetrigger && keyEvent.pressed() == KeyPressedEnum::PRESSED) )
 		{
@@ -548,6 +550,12 @@ void Operator::setFrequency (const float frequency)
 	{
 		m_Ratio = 0.25f;
 	}
+}
+
+void Operator::setDetune (const int cents)
+{
+	// TODO this should actually just set the m_Detune value to the amount in cents, then the keyEvent should set the actual val
+	m_Detune = cents; // m_Frequency * pow( 2.0f, (cents/1200.0f) );
 }
 
 void Operator::setAmplitude (const float amplitude)
