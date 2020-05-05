@@ -3,7 +3,8 @@
 // instantiating IPitchEventListener's event dispatcher
 EventDispatcher<IPitchEventListener, PitchEvent, &IPitchEventListener::onPitchEvent> IPitchEventListener::m_EventDispatcher;
 
-PitchEvent::PitchEvent (float pitchFactor) :
+PitchEvent::PitchEvent (float pitchFactor, unsigned int channel) :
+	IEvent ( channel ),
 	m_PitchFactor( pitchFactor )
 {
 }

@@ -4,17 +4,20 @@
 EventDispatcher<IMidiEventListener, MidiEvent, &IMidiEventListener::onMidiEvent> IMidiEventListener::m_EventDispatcher;
 
 MidiEvent::MidiEvent() :
+	IEvent ( 0 ),
 	m_Bytes { 0 }
 {
 }
 
 MidiEvent::MidiEvent (uint8_t byte1) :
+	IEvent ( 0 ),
 	m_Bytes { 0 }
 {
 	m_Bytes[0] = byte1;
 }
 
 MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2) :
+	IEvent ( 0 ),
 	m_Bytes { 0 }
 {
 	m_Bytes[0] = byte1;
@@ -22,6 +25,7 @@ MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2) :
 }
 
 MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3) :
+	IEvent ( 0 ),
 	m_Bytes { 0 }
 {
 	m_Bytes[0] = byte1;

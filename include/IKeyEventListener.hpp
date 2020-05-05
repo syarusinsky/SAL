@@ -15,10 +15,11 @@ enum class KeyPressedEnum : unsigned int
 	RELEASED
 };
 
-class KeyEvent : IEvent
+class KeyEvent : public IEvent
 {
 	public:
-		KeyEvent (KeyPressedEnum pressed = KeyPressedEnum::RELEASED, unsigned int note = 0, unsigned int velocity = 0);
+		KeyEvent (KeyPressedEnum pressed = KeyPressedEnum::RELEASED, unsigned int note = 0, unsigned int velocity = 0,
+				unsigned int channel = 0);
 		~KeyEvent() override;
 
 		bool operator== (const KeyEvent& other) const;

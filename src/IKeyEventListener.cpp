@@ -3,7 +3,8 @@
 // instantiating IKeyEventListener's event dispatcher
 EventDispatcher<IKeyEventListener, KeyEvent, &IKeyEventListener::onKeyEvent> IKeyEventListener::m_EventDispatcher;
 
-KeyEvent::KeyEvent (KeyPressedEnum pressed, unsigned int note, unsigned int velocity) :
+KeyEvent::KeyEvent (KeyPressedEnum pressed, unsigned int note, unsigned int velocity, unsigned int channel) :
+	IEvent ( channel ),
 	m_Pressed( pressed ),
 	m_Note( note ),
 	m_Velocity( velocity )

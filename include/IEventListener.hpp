@@ -34,7 +34,14 @@
 class IEvent
 {
 	public:
+		IEvent (unsigned int channel) : m_Channel (channel) {}
 		virtual ~IEvent() {}
+
+		unsigned int getChannel() { return m_Channel; }
+		void setChannel (unsigned int channel) { m_Channel = channel; }
+
+	protected:
+		unsigned int m_Channel;
 };
 
 class IEventListener

@@ -11,10 +11,10 @@
 
 #include "IEventListener.hpp"
 
-class PitchEvent : IEvent
+class PitchEvent : public IEvent
 {
 	public:
-		PitchEvent (float pitchFactor);
+		PitchEvent (float pitchFactor, unsigned int channel = 0);
 		~PitchEvent() override;
 
 		float getPitchFactor() const;

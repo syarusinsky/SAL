@@ -51,6 +51,7 @@ float Operator::nextSample()
 		{
 			currentValAmplitude *= egValue;
 		}
+		
 
 		if ( (m_GlideIncr >= 0.0f && m_GlideFrequency < m_RatioFrequency) || (m_GlideIncr <  0.0f && m_GlideFrequency > m_RatioFrequency) )
 		{
@@ -59,6 +60,7 @@ float Operator::nextSample()
 
 		float frequency = (m_UseRatio) ? m_GlideFrequency : m_Frequency;
 		frequency += m_FrequencyOffset;
+		frequency = frequency * pow( 2.0f, (m_Detune / 1200.0f) );
 
 		if (m_EGModDestinations.count(EGModDestination::FREQUENCY))
 		{
@@ -446,7 +448,6 @@ void Operator::onKeyEvent(const KeyEvent& keyEvent)
 		}
 
 		m_RatioFrequency *= m_Ratio;
-		m_RatioFrequency += m_RatioFrequency * pow( 2.0f, (m_Detune / 1200.0f) );
 
 		if ( !m_UseGlide || (m_UseGlideRetrigger && keyEvent.pressed() == KeyPressedEnum::PRESSED) )
 		{
@@ -558,7 +559,6 @@ void Operator::setFrequency (const float frequency)
 
 void Operator::setDetune (const int cents)
 {
-	// TODO this should actually just set the m_Detune value to the amount in cents, then the keyEvent should set the actual val
 	m_Detune = cents; // m_Frequency * pow( 2.0f, (cents/1200.0f) );
 }
 
