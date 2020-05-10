@@ -6,16 +6,11 @@
  * an AudioBuffer. See AudioBuffer for more details.
 ****************************************************************/
 
-namespace siike92
-{
-	class IBufferCallback;
-}
-
-class siike92::IBufferCallback
+class IBufferCallback
 {
 	public:
-		virtual ~IBufferCallback(){}
-		virtual void call(float* writeBuffer) = 0;
+		virtual ~IBufferCallback() {}
+		virtual void call (float* writeBuffer) = 0;
 };
 
 #endif

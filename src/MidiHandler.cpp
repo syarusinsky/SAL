@@ -5,12 +5,12 @@
 #include <cmath>
 
 MidiHandler::MidiHandler() :
-	m_WorkingStatusByte (0),
-	m_WorkingMessageLength (0),
-	m_WorkingDataByteIndex (0),
-	m_CurrentWriteIndex (0),
-	m_CurrentReadIndex (0),
-	m_SemitonesToPitchBend (1)
+	m_WorkingStatusByte( 0 ),
+	m_WorkingMessageLength( 0 ),
+	m_WorkingDataByteIndex( 0 ),
+	m_CurrentWriteIndex( 0 ),
+	m_CurrentReadIndex( 0 ),
+	m_SemitonesToPitchBend( 1 )
 {
 }
 
@@ -31,7 +31,7 @@ void MidiHandler::processByte (uint8_t byte)
 
 		if ( statusByteNybble != MIDI_SYSTEM_COMMON ) // if MIDI channel message
 		{
-			switch (statusByteNybble)
+			switch ( statusByteNybble )
 			{
 				case MIDI_NOTE_OFF:
 					m_WorkingMessageLength = MIDI_NOTE_OFF_NUM_DATA;

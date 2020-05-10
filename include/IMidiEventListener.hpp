@@ -18,6 +18,7 @@ class MidiEvent : public IEvent
 		MidiEvent (uint8_t byte1);
 		MidiEvent (uint8_t byte1, uint8_t byte2);
 		MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3);
+		MidiEvent (unsigned int numBytes, uint8_t bytes...);
 		~MidiEvent();
 
 		uint8_t* getRawData() const;

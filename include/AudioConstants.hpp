@@ -6,9 +6,6 @@
 #define SAMPLE_RATE 44100
 #define NYQUIST_FREQ (SAMPLE_RATE / 2)
 #define ABUFFER_SIZE 512
-#define WBUFFER_FREQ 60
-#define WBUFFER_SIZE (SAMPLE_RATE / WBUFFER_FREQ)
-
 
 // Musical Frequencies
 #define MUSIC_G9  12543.85

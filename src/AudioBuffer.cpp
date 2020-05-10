@@ -2,111 +2,111 @@
 
 #include "AudioConstants.hpp"
 
-siike92::AudioBuffer::AudioBuffer() :
-	m_Buffer1 (new float[ABUFFER_SIZE]),
-	m_Buffer2 (new float[ABUFFER_SIZE]),
-	m_Pos (0),
+AudioBuffer::AudioBuffer() :
+	m_Buffer1( new float[ABUFFER_SIZE] ),
+	m_Buffer2( new float[ABUFFER_SIZE] ),
+	m_Pos( 0 ),
 	m_Callbacks(),
-	m_CurrentReadBlock(0)
+	m_CurrentReadBlock( 0 )
 {
-	for (int sample = 0; sample < ABUFFER_SIZE; sample++)
+	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
 		m_Buffer1[sample] = 0;
 		m_Buffer2[sample] = 0;
 	}
 }
 
-siike92::AudioBuffer::AudioBuffer(const siike92::AudioBuffer& other) :
-	m_Buffer1 (new float[ABUFFER_SIZE]),
-	m_Buffer2 (new float[ABUFFER_SIZE]),
+AudioBuffer::AudioBuffer (const AudioBuffer& other) :
+	m_Buffer1( new float[ABUFFER_SIZE] ),
+	m_Buffer2( new float[ABUFFER_SIZE] ),
 	m_Callbacks()
 {
 	const float* const buffer1Other = other.getBuffer1();
-	for (int sample = 0; sample < ABUFFER_SIZE; sample++)
+	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 		m_Buffer1[sample] = buffer1Other[sample];
 
 	const float* const buffer2Other = other.getBuffer2();
-	for (int sample = 0; sample < ABUFFER_SIZE; sample++)
+	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 		m_Buffer2[sample] = buffer2Other[sample];
 
-	for (IBufferCallback* bC : other.getCallbacks())
+	for ( IBufferCallback* bC : other.getCallbacks() )
 		m_Callbacks.insert(bC);
 }
 
-siike92::AudioBuffer::~AudioBuffer()
+AudioBuffer::~AudioBuffer()
 {
 	delete m_Buffer1;
 	delete m_Buffer2;
 }
 
-siike92::AudioBuffer& siike92::AudioBuffer::operator= (const siike92::AudioBuffer& other)
+AudioBuffer& AudioBuffer::operator= (const AudioBuffer& other)
 {
 	const float* const buffer1Other = other.getBuffer1();
-	for (int sample = 0; sample < ABUFFER_SIZE; sample++)
+	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 		m_Buffer1[sample] = buffer1Other[sample];
 
 	const float* const buffer2Other = other.getBuffer2();
-	for (int sample = 0; sample < ABUFFER_SIZE; sample++)
+	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 		m_Buffer2[sample] = buffer2Other[sample];
 
 	m_Callbacks.clear();
-	for (IBufferCallback* bC : other.getCallbacks())
-		m_Callbacks.insert(bC);
+	for ( IBufferCallback* bC : other.getCallbacks() )
+		m_Callbacks.insert( bC );
 
 
 	return *this;
 }
 
-unsigned int siike92::AudioBuffer::getNumSamples() const
+unsigned int AudioBuffer::getNumSamples() const
 {
 	return ABUFFER_SIZE;
 }
 
-float siike92::AudioBuffer::getNextSample()
+float AudioBuffer::getNextSample()
 {
-	float retVal = getBuffer(m_CurrentReadBlock)[m_Pos];
+	float retVal = getBuffer( m_CurrentReadBlock )[m_Pos];
 
 	m_Pos++;
-	if (m_Pos >= ABUFFER_SIZE)
+	if ( m_Pos >= ABUFFER_SIZE )
 	{
 		m_Pos = 0;
 
 		m_CurrentReadBlock = !m_CurrentReadBlock;
-		for (siike92::IBufferCallback* callback : m_Callbacks)
+		for ( IBufferCallback* callback : m_Callbacks )
 		{
-			callback->call(getBuffer(!m_CurrentReadBlock));
+			callback->call( getBuffer(!m_CurrentReadBlock) );
 		}
 	}
 
 	return retVal;
 }
 
-const float* const siike92::AudioBuffer::getBuffer1() const
+const float* const AudioBuffer::getBuffer1() const
 {
 	return m_Buffer1;
 }
 
-const float* const siike92::AudioBuffer::getBuffer2() const
+const float* const AudioBuffer::getBuffer2() const
 {
 	return m_Buffer2;
 }
 
-const std::set<siike92::IBufferCallback*>& siike92::AudioBuffer::getCallbacks() const
+const std::set<IBufferCallback*>& AudioBuffer::getCallbacks() const
 {
 	return m_Callbacks;
 }
 
-void siike92::AudioBuffer::registerCallback(IBufferCallback* callback)
+void AudioBuffer::registerCallback (IBufferCallback* callback)
 {
-	if (callback)
+	if ( callback )
 	{
 		m_Callbacks.insert(callback);
 	}
 }
 
-float* siike92::AudioBuffer::getBuffer(bool writeBuffer)
+float* AudioBuffer::getBuffer (bool writeBuffer)
 {
-	if (writeBuffer)
+	if ( writeBuffer )
 	{
 		return m_Buffer2;
 	}

@@ -1,36 +1,54 @@
 #include "IMidiEventListener.hpp"
 
+#include <cstdarg>
+
 // instantiating IMidiEventListener's event dispatcher
 EventDispatcher<IMidiEventListener, MidiEvent, &IMidiEventListener::onMidiEvent> IMidiEventListener::m_EventDispatcher;
 
 MidiEvent::MidiEvent() :
-	IEvent ( 0 ),
-	m_Bytes { 0 }
+	IEvent( 0 ),
+	m_Bytes{ 0 }
 {
 }
 
 MidiEvent::MidiEvent (uint8_t byte1) :
-	IEvent ( 0 ),
-	m_Bytes { 0 }
+	IEvent( 0 ),
+	m_Bytes{ 0 }
 {
 	m_Bytes[0] = byte1;
 }
 
 MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2) :
-	IEvent ( 0 ),
-	m_Bytes { 0 }
+	IEvent( 0 ),
+	m_Bytes{ 0 }
 {
 	m_Bytes[0] = byte1;
 	m_Bytes[1] = byte2;
 }
 
 MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3) :
-	IEvent ( 0 ),
-	m_Bytes { 0 }
+	IEvent( 0 ),
+	m_Bytes{ 0 }
 {
 	m_Bytes[0] = byte1;
 	m_Bytes[1] = byte2;
 	m_Bytes[2] = byte3;
+}
+
+MidiEvent::MidiEvent (unsigned int numBytes, uint8_t bytes...) :
+	IEvent( 0 ),
+	m_Bytes{ 0 }
+{
+	va_list args;
+	va_start( args, bytes );
+
+	// first byte
+	m_Bytes[0] = bytes;
+
+	for ( unsigned int byteNum = 1; byteNum < numBytes; byteNum++ )
+	{
+		m_Bytes[byteNum] = static_cast<uint8_t>( va_arg(args, unsigned int) );
+	}
 }
 
 MidiEvent::~MidiEvent()

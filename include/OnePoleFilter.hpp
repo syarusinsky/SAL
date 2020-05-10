@@ -18,7 +18,7 @@ class OnePoleFilter : public IFilter
 		~OnePoleFilter() override;
 
 		float processSample (float sample) override;
-		void setCoefficients(float frequency) override;
+		void setCoefficients (float frequency) override;
 		void setResonance (float resonance) override {}
 		float getResonance() override { return 0.0f; }
 

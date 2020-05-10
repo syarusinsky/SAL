@@ -10,21 +10,21 @@ KeyEventServer::~KeyEventServer()
 {
 }
 
-void KeyEventServer::registerListener(IKeyEventListener* listener)
+void KeyEventServer::registerListener (IKeyEventListener* listener)
 {
-	if (listener)
+	if ( listener )
 	{
-		m_KeyEventListeners.insert(listener);
+		m_KeyEventListeners.insert( listener );
 	}
 }
 
-void KeyEventServer::propagateKeyEvent(const KeyEvent& keyEvent)
+void KeyEventServer::propagateKeyEvent (const KeyEvent& keyEvent)
 {
-	for (IKeyEventListener* keyEventListener : m_KeyEventListeners)
+	for ( IKeyEventListener* keyEventListener : m_KeyEventListeners )
 	{
-		if (keyEventListener)
+		if ( keyEventListener )
 		{
-			keyEventListener->onKeyEvent(keyEvent);
+			keyEventListener->onKeyEvent( keyEvent );
 		}
 	}
 }

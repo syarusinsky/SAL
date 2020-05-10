@@ -2,32 +2,33 @@
 
 #include "AudioConstants.hpp"
 #include "MidiConstants.hpp"
-#include "WaveBuffer.hpp"
+#include "IOscillator.hpp"
 #include "IEnvelopeGenerator.hpp"
+#include <math.h>
 
 Operator::Operator(IOscillator* wave, IEnvelopeGenerator* eg, IFilter* filt, float amplitude, float frequency) :
-	m_Osc(wave),
-	m_EG(eg),
-	m_Filter(filt),
-	m_FilterCenterFreq(20000.0f),
-	m_UseRatio(false),
+	m_Osc( wave ),
+	m_EG( eg ),
+	m_Filter( filt ),
+	m_FilterCenterFreq( 20000.0f ),
+	m_UseRatio( false ),
 	m_ModSources(),
 	m_EGModDestinations(),
-	m_Amplitude(amplitude),
-	m_Frequency(frequency),
-	m_Detune(0),
-	m_Ratio(1.0f),
-	m_RatioFrequency(frequency),
-	m_CurrentValue(0.0f),
-	m_AmpVelSens(0.0f),
-	m_FiltVelSens(0.0f),
-	m_FrequencyOffset(0.0f),
-	m_GlideFrequency(0.0f),
-	m_GlideTime(0.0f),
-	m_GlideNumSamples(1),
-	m_GlideIncr(0.0f),
-	m_UseGlideRetrigger(true),
-	m_UseGlide(false)
+	m_Amplitude( amplitude ),
+	m_Frequency( frequency ),
+	m_Detune( 0 ),
+	m_Ratio( 1.0f ),
+	m_RatioFrequency( frequency ),
+	m_CurrentValue( 0.0f ),
+	m_AmpVelSens( 0.0f ),
+	m_FiltVelSens( 0.0f ),
+	m_FrequencyOffset( 0.0f ),
+	m_GlideFrequency( 0.0f ),
+	m_GlideTime( 0.0f ),
+	m_GlideNumSamples( 1 ),
+	m_GlideIncr( 0.0f ),
+	m_UseGlideRetrigger( true ),
+	m_UseGlide( false )
 {
 }
 
@@ -37,17 +38,17 @@ Operator::~Operator()
 
 float Operator::nextSample()
 {
-	if (m_Osc)
+	if ( m_Osc )
 	{
 		float egValue = 1.0f;
-		if (m_EG)
+		if ( m_EG )
 		{
 			egValue = m_EG->nextValue();
 		}
 
 		float currentValAmplitude = 1.0f - (m_AmpVelSens * m_CurrentVelocity);
 
-		if (m_EGModDestinations.count(EGModDestination::AMPLITUDE))
+		if ( m_EGModDestinations.count(EGModDestination::AMPLITUDE) )
 		{
 			currentValAmplitude *= egValue;
 		}
@@ -62,35 +63,35 @@ float Operator::nextSample()
 		frequency += m_FrequencyOffset;
 		frequency = frequency * pow( 2.0f, (m_Detune / 1200.0f) );
 
-		if (m_EGModDestinations.count(EGModDestination::FREQUENCY))
+		if ( m_EGModDestinations.count(EGModDestination::FREQUENCY) )
 		{
 			frequency = (frequency * egValue) + 1.0f;
 		}
 
-		for (IModulationSource* modSource : m_ModSources)
+		for ( IModulationSource* modSource : m_ModSources )
 		{
-			std::map<IModulationSource*, float>::iterator amplitude = m_ModAmplitudes.find(modSource);
-			if (amplitude != m_ModAmplitudes.end())
+			std::map<IModulationSource*, float>::iterator amplitude = m_ModAmplitudes.find( modSource );
+			if ( amplitude != m_ModAmplitudes.end() )
 			{
-				frequency += ((*amplitude).second * modSource->currentValue());
+				frequency += ( (*amplitude).second * modSource->currentValue() );
 			}
 		}
 
 		m_Osc->setFrequency( frequency );
-		m_CurrentValue = (m_Osc->nextSample()) * currentValAmplitude;
+		m_CurrentValue = ( m_Osc->nextSample() ) * currentValAmplitude;
 
-		if (m_Filter)
+		if ( m_Filter )
 		{
 			float frequency = m_FilterCenterFreq;
 			frequency *= ( 1.0f - (m_FiltVelSens * m_CurrentVelocity) );
 
-			if (m_EGModDestinations.count(EGModDestination::FILT_FREQUENCY))
+			if ( m_EGModDestinations.count(EGModDestination::FILT_FREQUENCY) )
 			{
 				frequency *= egValue;
 			}
 
-			m_Filter->setCoefficients(frequency);
-			m_CurrentValue = m_Filter->processSample(m_CurrentValue);
+			m_Filter->setCoefficients( frequency );
+			m_CurrentValue = m_Filter->processSample( m_CurrentValue );
 		}
 
 		return m_CurrentValue * m_Amplitude;
@@ -104,19 +105,19 @@ float Operator::currentValue()
 	return m_CurrentValue;
 }
 
-void Operator::onKeyEvent(const KeyEvent& keyEvent)
+void Operator::onKeyEvent (const KeyEvent& keyEvent)
 {
-	if (keyEvent.pressed() == KeyPressedEnum::PRESSED)
+	if ( keyEvent.pressed() == KeyPressedEnum::PRESSED )
 	{
 		m_CurrentVelocity = 1.0f - ( (float)keyEvent.velocity() / 127.0f );
 	}
 
-	if (m_EG)
+	if ( m_EG )
 	{
-		m_EG->onKeyEvent(keyEvent);
+		m_EG->onKeyEvent( keyEvent );
 	}
 
-	if (m_UseRatio)
+	if ( m_UseRatio )
 	{
 		m_RatioFrequency = 0.0f;
 
@@ -482,7 +483,7 @@ IEnvelopeGenerator* Operator::getEnvelopeGenerator()
 
 void Operator::setEnvelopeGenerator (IEnvelopeGenerator* eg)
 {
-	if (eg)
+	if ( eg )
 	{
 		m_EG = eg;
 	}
@@ -490,11 +491,11 @@ void Operator::setEnvelopeGenerator (IEnvelopeGenerator* eg)
 
 void Operator::setModSourceAmplitude (IModulationSource* modSource, float amplitude)
 {
-	m_ModSources.insert(modSource);
+	m_ModSources.insert( modSource );
 
-	if (!m_ModAmplitudes.count(modSource))
+	if ( !m_ModAmplitudes.count(modSource) )
 	{
-		m_ModAmplitudes.insert(std::pair<IModulationSource*, float>(modSource, amplitude));
+		m_ModAmplitudes.insert( std::pair<IModulationSource*, float>(modSource, amplitude) );
 	}
 	else
 	{
@@ -504,50 +505,50 @@ void Operator::setModSourceAmplitude (IModulationSource* modSource, float amplit
 
 void Operator::setEGModDestination (const EGModDestination& modDest, const bool on)
 {
-	if (on)
+	if ( on )
 	{
-		m_EGModDestinations.insert(modDest);
+		m_EGModDestinations.insert( modDest );
 	}
 	else
 	{
-		m_EGModDestinations.erase(modDest);
+		m_EGModDestinations.erase( modDest );
 	}
 }
 
 void Operator::unsetEGModDestination (const EGModDestination& modDest)
 {
-	m_EGModDestinations.erase(modDest);
+	m_EGModDestinations.erase( modDest );
 }
 
 void Operator::setFrequency (const float frequency)
 {
 	m_Frequency = frequency;
 
-	if (m_Frequency > 15000.0f)
+	if ( m_Frequency > 15000.0f )
 	{
 		m_Ratio = 6.0f;
 	}
-	else if (m_Frequency > 10000.0f)
+	else if ( m_Frequency > 10000.0f )
 	{
 		m_Ratio = 5.0f;
 	}
-	else if (m_Frequency > 5000.0f)
+	else if ( m_Frequency > 5000.0f )
 	{
 		m_Ratio = 4.0f;
 	}
-	else if (m_Frequency > 2500.0f)
+	else if ( m_Frequency > 2500.0f )
 	{
 		m_Ratio = 3.0f;
 	}
-	else if (m_Frequency > 1500.0f)
+	else if ( m_Frequency > 1500.0f )
 	{
 		m_Ratio = 2.0f;
 	}
-	else if (m_Frequency > 1000.0f)
+	else if ( m_Frequency > 1000.0f )
 	{
 		m_Ratio = 1.0f;
 	}
-	else if (m_Frequency > 500.0f)
+	else if ( m_Frequency > 500.0f )
 	{
 		m_Ratio = 0.5f;
 	}
@@ -559,7 +560,7 @@ void Operator::setFrequency (const float frequency)
 
 void Operator::setDetune (const int cents)
 {
-	m_Detune = cents; // m_Frequency * pow( 2.0f, (cents/1200.0f) );
+	m_Detune = cents;
 }
 
 void Operator::setAmplitude (const float amplitude)
@@ -574,7 +575,7 @@ void Operator::setFilterFreq (const float frequency)
 
 void Operator::setFilterRes (const float resonance)
 {
-	m_Filter->setResonance(resonance);
+	m_Filter->setResonance( resonance );
 }
 
 void Operator::setRatio (const bool useRatio)
@@ -601,7 +602,7 @@ void Operator::setGlideTime (const float glideTime)
 {
 	m_GlideTime = glideTime;
 
-	if (glideTime <= 0.0f)
+	if ( glideTime <= 0.0f )
 	{
 		m_GlideNumSamples = 1;
 	}

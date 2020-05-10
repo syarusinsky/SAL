@@ -15,16 +15,11 @@
 
 #include "IBufferCallback.hpp"
 
-namespace siike92
-{
-	class AudioBuffer;
-}
-
-class siike92::AudioBuffer
+class AudioBuffer
 {
 	public:
 		AudioBuffer();
-		AudioBuffer(const AudioBuffer& other);
+		AudioBuffer (const AudioBuffer& other);
 		virtual ~AudioBuffer();
 
 		AudioBuffer& operator= (const AudioBuffer& other);
@@ -34,7 +29,7 @@ class siike92::AudioBuffer
 		const float* const getBuffer1() const;
 		const float* const getBuffer2() const;
 		const std::set<IBufferCallback*>& getCallbacks() const;
-		void registerCallback(IBufferCallback* callback);
+		void registerCallback (IBufferCallback* callback);
 	private:
 		float* m_Buffer1;
 		float* m_Buffer2;

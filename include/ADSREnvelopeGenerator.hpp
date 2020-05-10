@@ -25,7 +25,8 @@ enum EGStage
 class ADSREnvelopeGenerator : public IEnvelopeGenerator
 {
 	public:
-		ADSREnvelopeGenerator(const float atkSec, const float decSec, const float susLVL, const float relSec, IResponse* atkResponse, IResponse* decResponse, IResponse* relResponse);
+		ADSREnvelopeGenerator (const float atkSec, const float decSec, const float susLVL, const float relSec,
+					IResponse* atkResponse, IResponse* decResponse, IResponse* relResponse);
 		~ADSREnvelopeGenerator() override;
 
 		float nextValue() override;
@@ -46,6 +47,10 @@ class ADSREnvelopeGenerator : public IEnvelopeGenerator
 		float getDecay();
 		float getSustain();
 		float getRelease();
+
+		float getAttackExpo();
+		float getDecayExpo();
+		float getReleaseExpo();
 
 	private:
 		float m_Attack; // incr of attack (0 - 1)

@@ -30,7 +30,7 @@ enum class EGModDestination : unsigned int
 class Operator : public IModulationSource, public IKeyEventListener, public IPitchEventListener
 {
 	public:
-		Operator(IOscillator* osc, IEnvelopeGenerator* eg, IFilter* filt, float amplitude, float frequency);
+		Operator (IOscillator* osc, IEnvelopeGenerator* eg, IFilter* filt, float amplitude, float frequency);
 		~Operator() override;
 
 		float nextSample();

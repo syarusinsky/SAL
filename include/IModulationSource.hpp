@@ -11,7 +11,7 @@
 class IModulationSource
 {
 	public:
-		virtual ~IModulationSource(){}
+		virtual ~IModulationSource() {}
 		virtual float currentValue() = 0;
 };
 

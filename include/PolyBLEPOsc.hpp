@@ -1,6 +1,11 @@
 #ifndef POLYBLEPOSC_HPP
 #define POLYBLEPOSC_HPP
 
+/*******************************************************************************
+ * A PolyBLEPOsc is a band-limited oscillator that can be used to produce
+ * audible oscillations.
+*******************************************************************************/
+
 #include "IOscillator.hpp"
 
 class PolyBLEPOsc : public IOscillator
