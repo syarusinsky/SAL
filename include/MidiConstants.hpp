@@ -1,3 +1,6 @@
+#ifndef MIDICONSTANTS_HPP
+#define MIDICONSTANTS_HPP
+
 /******************************************************
  * This file defines MIDI constants that will be used
  * throughout many programs.
@@ -168,3 +171,5 @@
 #define MIDI_NOTE_B0  23
 #define MIDI_NOTE_BB0 22
 #define MIDI_NOTE_A0  21
+
+#endif // MIDICONSTANTS_HPP

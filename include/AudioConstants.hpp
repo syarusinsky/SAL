@@ -1,3 +1,6 @@
+#ifndef AUDIOCONSTANTS_HPP
+#define AUDIOCONSTANTS_HPP
+
 /*******************************************************
  * This class contains the audio constants that the
  * target system will be running at.
@@ -115,3 +118,5 @@
 #define MUSIC_B0  30.87
 #define MUSIC_BB0 29.14
 #define MUSIC_A0  27.50
+
+#endif // AUDIOCONSTANTS_HPP
