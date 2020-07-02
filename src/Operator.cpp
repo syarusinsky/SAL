@@ -52,7 +52,6 @@ float Operator::nextSample()
 		{
 			currentValAmplitude *= egValue;
 		}
-		
 
 		if ( (m_GlideIncr >= 0.0f && m_GlideFrequency < m_RatioFrequency) || (m_GlideIncr <  0.0f && m_GlideFrequency > m_RatioFrequency) )
 		{
@@ -524,35 +523,35 @@ void Operator::setFrequency (const float frequency)
 {
 	m_Frequency = frequency;
 
-	if ( m_Frequency > 15000.0f )
+	if ( m_Frequency > OP_THRESHOLD_6X )
 	{
 		m_Ratio = 6.0f;
 	}
-	else if ( m_Frequency > 10000.0f )
+	else if ( m_Frequency > OP_THRESHOLD_5X )
 	{
 		m_Ratio = 5.0f;
 	}
-	else if ( m_Frequency > 5000.0f )
+	else if ( m_Frequency > OP_THRESHOLD_4X )
 	{
 		m_Ratio = 4.0f;
 	}
-	else if ( m_Frequency > 2500.0f )
+	else if ( m_Frequency > OP_THRESHOLD_3X )
 	{
 		m_Ratio = 3.0f;
 	}
-	else if ( m_Frequency > 1500.0f )
+	else if ( m_Frequency > OP_THRESHOLD_2X )
 	{
 		m_Ratio = 2.0f;
 	}
-	else if ( m_Frequency > 1000.0f )
+	else if ( m_Frequency > OP_THRESHOLD_1X )
 	{
 		m_Ratio = 1.0f;
 	}
-	else if ( m_Frequency > 500.0f )
+	else if ( m_Frequency > OP_THRESHOLD_D2 )
 	{
 		m_Ratio = 0.5f;
 	}
-	else
+	else if ( m_Frequency >= OP_THRESHOLD_D4 )
 	{
 		m_Ratio = 0.25f;
 	}

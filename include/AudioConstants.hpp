@@ -1,6 +1,8 @@
 #ifndef AUDIOCONSTANTS_HPP
 #define AUDIOCONSTANTS_HPP
 
+#include <limits>
+
 /*******************************************************
  * This class contains the audio constants that the
  * target system will be running at.
@@ -9,6 +11,16 @@
 #define SAMPLE_RATE 44100
 #define NYQUIST_FREQ (SAMPLE_RATE / 2)
 #define ABUFFER_SIZE 512
+
+// Operator Thresholds (X means times, so 6X means 6 times the original; D means divided by)
+#define OP_THRESHOLD_6X 15000.0f
+#define OP_THRESHOLD_5X 10000.0f
+#define OP_THRESHOLD_4X 5000.0f
+#define OP_THRESHOLD_3X 2500.0f
+#define OP_THRESHOLD_2X 1500.0f
+#define OP_THRESHOLD_1X 1000.0f
+#define OP_THRESHOLD_D2 500.0f
+#define OP_THRESHOLD_D4 std::numeric_limits<float>::min()
 
 // Musical Frequencies
 #define MUSIC_G9  12543.85
