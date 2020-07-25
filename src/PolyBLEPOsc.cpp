@@ -44,7 +44,7 @@ float PolyBLEPOsc::nextSample()
 		if ( m_OscMode == OscillatorMode::SQUARE || m_OscMode == OscillatorMode::TRIANGLE )
 		{
 			// calculate PolyBLEP for square wave (which later can be integrated into a triangle wave)
-			t = fmod( (std::abs(m_Phase) / (2.0f * M_PI)) + 0.5f, 1.0f );
+			t = fmodf( (std::abs(m_Phase) / (2.0f * M_PI)) + 0.5f, 1.0f );
 
 			if ( t < dt )
 			{
@@ -109,7 +109,7 @@ float PolyBLEPOsc::nextSample()
 void PolyBLEPOsc::setFrequency (float frequency)
 {
 	m_PhaseIncr = (frequency * 2.0f * M_PI) / SAMPLE_RATE;
-	m_B1 = exp( -2.0f * M_PI * (std::abs(frequency) / SAMPLE_RATE / 2.0f) ); // we need the abs value, since freq can be negative
+	m_B1 = expf( -2.0f * M_PI * (std::abs(frequency) / SAMPLE_RATE / 2.0f) ); // we need the abs value, since freq can be negative
 	m_A0 = 1.0f - m_B1;
 }
 

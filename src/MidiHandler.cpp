@@ -155,7 +155,7 @@ void MidiHandler::dispatchEvents()
 			float pitchBendNormalized = ( (static_cast<float>(pitchBendVal) / 16383.0f) * 2.0f ) - 1.0f;
 
 			// multiply by the number of semitones in bend range then divide by 12, then raise 2 to that power
-			float pitchBendFactor = pow( 2.0f, (pitchBendNormalized * static_cast<float>(m_SemitonesToPitchBend)) / 12.0f );
+			float pitchBendFactor = powf( 2.0f, (pitchBendNormalized * static_cast<float>(m_SemitonesToPitchBend)) / 12.0f );
 
 			IPitchEventListener::PublishEvent( PitchEvent(pitchBendFactor) );
 		}

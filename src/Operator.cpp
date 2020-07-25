@@ -60,7 +60,7 @@ float Operator::nextSample()
 
 		float frequency = (m_UseRatio) ? m_GlideFrequency : m_Frequency;
 		frequency += m_FrequencyOffset;
-		frequency = frequency * pow( 2.0f, (m_Detune / 1200.0f) );
+		frequency = frequency * powf( 2.0f, (m_Detune / 1200.0f) );
 
 		if ( m_EGModDestinations.count(EGModDestination::FREQUENCY) )
 		{
