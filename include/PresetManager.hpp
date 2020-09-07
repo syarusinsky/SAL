@@ -59,29 +59,45 @@ class PresetManager
 		template <typename T>
 		void writeHeader (T& header)
 		{
-			m_StorageMedia->writeToMedia( Variant( &header ), m_HeaderSizeInBytes, 0 );
+			uint8_t* headerPtr = reinterpret_cast<uint8_t*>( &header );
+
+			SharedData<uint8_t> data = SharedData<uint8_t>::MakeSharedData( sizeof(T) );
+			for ( unsigned int byte = 0; byte < data.getSizeInBytes(); byte++ )
+			{
+				data[byte] = headerPtr[byte];
+			}
+
+			m_StorageMedia->writeToMedia( data, 0 );
 		}
 
 		template <typename T>
 		T retrieveHeader()
 		{
-			Variant header = m_StorageMedia->readFromMedia( sizeof(T), 0 );
+			SharedData<uint8_t> data = m_StorageMedia->readFromMedia( sizeof(T), 0 );
 
-			return header.get<T>();
+			return *( reinterpret_cast<T*>(data.getPtr()) );
 		}
 
 		template <typename T>
 		void writePreset (T& preset, unsigned int presetNum)
 		{
-			m_StorageMedia->writeToMedia( Variant( &preset ), sizeof(T), m_HeaderSizeInBytes + (presetNum * sizeof(T)) );
+			uint8_t* presetBytePtr = reinterpret_cast<uint8_t*>( &preset );
+
+			SharedData<uint8_t> data = SharedData<uint8_t>::MakeSharedData( sizeof(T) );
+			for ( unsigned int byte = 0; byte < data.getSizeInBytes(); byte++ )
+			{
+				data[byte] = presetBytePtr[byte];
+			}
+
+			m_StorageMedia->writeToMedia( data, m_HeaderSizeInBytes + (presetNum * sizeof(T)) );
 		}
 
 		template <typename T>
 		T retrievePreset (const unsigned int presetNum)
 		{
-			Variant preset = m_StorageMedia->readFromMedia( sizeof(T), m_HeaderSizeInBytes + (presetNum * sizeof(T)) );
+			SharedData<uint8_t> preset = m_StorageMedia->readFromMedia( sizeof(T), m_HeaderSizeInBytes + (presetNum * sizeof(T)) );
 
-			return preset.get<T>();
+			return *( reinterpret_cast<T*>(preset.getPtr()) );
 		}
 
 		template <typename T>
@@ -92,7 +108,7 @@ class PresetManager
 				m_CurrentPreset++;
 			}
 
-			return retrievePreset<T>( m_CurrentPreset );
+			return this->retrievePreset<T>( m_CurrentPreset );
 		}
 
 		template <typename T>
@@ -103,7 +119,7 @@ class PresetManager
 				m_CurrentPreset--;
 			}
 
-			return retrievePreset<T>( m_CurrentPreset );
+			return this->retrievePreset<T>( m_CurrentPreset );
 		}
 
 		unsigned int getMaxNumPresets() { return m_MaxNumPresets; }
