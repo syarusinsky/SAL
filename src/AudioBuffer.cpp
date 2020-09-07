@@ -35,8 +35,8 @@ AudioBuffer::AudioBuffer (const AudioBuffer& other) :
 
 AudioBuffer::~AudioBuffer()
 {
-	delete m_Buffer1;
-	delete m_Buffer2;
+	delete[] m_Buffer1;
+	delete[] m_Buffer2;
 }
 
 AudioBuffer& AudioBuffer::operator= (const AudioBuffer& other)
