@@ -26,6 +26,7 @@ class AudioBuffer
 
 		unsigned int getNumSamples() const;
 		float getNextSample();
+		void pollToFillBuffers();
 		const float* const getBuffer1() const;
 		const float* const getBuffer2() const;
 		const std::set<IBufferCallback*>& getCallbacks() const;
@@ -37,6 +38,7 @@ class AudioBuffer
 		std::set<IBufferCallback*> m_Callbacks;
 
 		bool m_CurrentReadBlock;
+		bool m_NextReadBlockFilled;
 
 		float* getBuffer(bool writeBuffer);
 };

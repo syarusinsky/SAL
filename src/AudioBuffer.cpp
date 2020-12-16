@@ -7,7 +7,8 @@ AudioBuffer::AudioBuffer() :
 	m_Buffer2( new float[ABUFFER_SIZE] ),
 	m_Pos( 0 ),
 	m_Callbacks(),
-	m_CurrentReadBlock( 0 )
+	m_CurrentReadBlock( false ),
+	m_NextReadBlockFilled( false )
 {
 	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
@@ -71,14 +72,24 @@ float AudioBuffer::getNextSample()
 	{
 		m_Pos = 0;
 
-		m_CurrentReadBlock = !m_CurrentReadBlock;
+		m_CurrentReadBlock = ! m_CurrentReadBlock;
+		m_NextReadBlockFilled = false;
+	}
+
+	return retVal;
+}
+
+void AudioBuffer::pollToFillBuffers()
+{
+	if ( ! m_NextReadBlockFilled )
+	{
 		for ( IBufferCallback* callback : m_Callbacks )
 		{
 			callback->call( getBuffer(!m_CurrentReadBlock) );
 		}
-	}
 
-	return retVal;
+		m_NextReadBlockFilled = true;
+	}
 }
 
 const float* const AudioBuffer::getBuffer1() const
