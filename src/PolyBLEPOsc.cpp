@@ -122,3 +122,11 @@ OscillatorMode PolyBLEPOsc::getOscillatorMode()
 {
 	return m_OscMode;
 }
+
+void PolyBLEPOsc::call (float* writeBuffer)
+{
+	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
+	{
+		writeBuffer[sample] = this->nextSample();
+	}
+}

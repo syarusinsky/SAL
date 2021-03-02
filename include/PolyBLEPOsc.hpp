@@ -7,8 +7,9 @@
 *******************************************************************************/
 
 #include "IOscillator.hpp"
+#include "IBufferCallback.hpp"
 
-class PolyBLEPOsc : public IOscillator
+class PolyBLEPOsc : public IOscillator, public IBufferCallback
 {
 	public:
 		PolyBLEPOsc();
@@ -18,6 +19,8 @@ class PolyBLEPOsc : public IOscillator
 		void setFrequency (float frequency) override;
 		void setOscillatorMode (const OscillatorMode& mode) override;
 		OscillatorMode getOscillatorMode() override;
+
+		void call (float* writeBuffer) override;
 
 	private:
 		float m_Phase;

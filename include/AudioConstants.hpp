@@ -8,9 +8,17 @@
  * target system will be running at.
 *******************************************************/
 
+#ifdef TARGET_BUILD
+#define SAMPLE_RATE 40000
+#else
 #define SAMPLE_RATE 44100
+#endif
 #define NYQUIST_FREQ (SAMPLE_RATE / 2)
+#ifdef TARGET_BUILD
+#define ABUFFER_SIZE 256
+#else
 #define ABUFFER_SIZE 512
+#endif
 
 // Operator Thresholds (X means times, so 6X means 6 times the original; D means divided by)
 #define OP_THRESHOLD_6X 15000.0f
