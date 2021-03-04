@@ -7,28 +7,32 @@ EventDispatcher<IMidiEventListener, MidiEvent, &IMidiEventListener::onMidiEvent>
 
 MidiEvent::MidiEvent() :
 	IEvent( 0 ),
-	m_Bytes{ 0 }
+	m_Bytes{ 0 },
+	m_Valid( false )
 {
 }
 
-MidiEvent::MidiEvent (uint8_t byte1) :
+MidiEvent::MidiEvent (uint8_t byte1, bool valid) :
 	IEvent( 0 ),
-	m_Bytes{ 0 }
+	m_Bytes{ 0 },
+	m_Valid( valid )
 {
 	m_Bytes[0] = byte1;
 }
 
-MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2) :
+MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, bool valid) :
 	IEvent( 0 ),
-	m_Bytes{ 0 }
+	m_Bytes{ 0 },
+	m_Valid( valid )
 {
 	m_Bytes[0] = byte1;
 	m_Bytes[1] = byte2;
 }
 
-MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3) :
+MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3, bool valid) :
 	IEvent( 0 ),
-	m_Bytes{ 0 }
+	m_Bytes{ 0 },
+	m_Valid( valid )
 {
 	m_Bytes[0] = byte1;
 	m_Bytes[1] = byte2;
@@ -37,7 +41,8 @@ MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3) :
 
 MidiEvent::MidiEvent (unsigned int numBytes, uint8_t bytes...) :
 	IEvent( 0 ),
-	m_Bytes{ 0 }
+	m_Bytes{ 0 },
+	m_Valid( true )
 {
 	va_list args;
 	va_start( args, bytes );
@@ -108,6 +113,16 @@ bool MidiEvent::isControlChange() const
 	}
 
 	return false;
+}
+
+bool MidiEvent::isValid() const
+{
+	return m_Valid;
+}
+
+void MidiEvent::setValid (bool valid)
+{
+	m_Valid = valid;
 }
 
 IMidiEventListener::~IMidiEventListener()

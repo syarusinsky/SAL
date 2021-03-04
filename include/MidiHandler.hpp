@@ -26,7 +26,7 @@ class MidiHandler
 
 	private:
 		uint8_t m_WorkingStatusByte;
-		unsigned int m_WorkingMessageLength;
+		unsigned int m_WorkingMessageNumDataBytes;
 		unsigned int m_WorkingDataByteIndex;
 		unsigned int m_CurrentWriteIndex;
 		unsigned int m_CurrentReadIndex;

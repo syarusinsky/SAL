@@ -15,9 +15,9 @@ class MidiEvent : public IEvent
 {
 	public:
 		MidiEvent();
-		MidiEvent (uint8_t byte1);
-		MidiEvent (uint8_t byte1, uint8_t byte2);
-		MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3);
+		MidiEvent (uint8_t byte1, bool valid = false);
+		MidiEvent (uint8_t byte1, uint8_t byte2, bool valid = false);
+		MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3, bool valid = false);
 		MidiEvent (unsigned int numBytes, uint8_t bytes...);
 		~MidiEvent();
 
@@ -29,8 +29,12 @@ class MidiEvent : public IEvent
 		bool isPolyphonicAftertouch() const;
 		bool isControlChange() const;
 
+		bool isValid() const;
+		void setValid (bool valid);
+
 	private:
 		uint8_t m_Bytes[MAX_MIDI_MESSAGE_SIZE];
+		bool 	m_Valid;
 };
 
 class IMidiEventListener : public IEventListener
