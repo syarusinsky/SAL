@@ -16,9 +16,9 @@ class ExponentialResponse : public IResponse
 		~ExponentialResponse() override;
 
 		float response (const float value, const float minValue, const float maxValue) const override;
-		void setSlope (const float slope);
+		void setSlope (const float slope) override;
 
-		float getSlope() { return m_Slope; }
+		float getSlope() override { return m_Slope; }
 	public:
 		float m_Slope;
 };
