@@ -11,10 +11,12 @@
  * buffer.
 ******************************************************************/
 
-#include <set>
-
 #include "IBufferCallback.hpp"
 
+#include <set>
+#include <stdint.h>
+
+template <typename T>
 class AudioBuffer
 {
 	public:
@@ -22,25 +24,27 @@ class AudioBuffer
 		AudioBuffer (const AudioBuffer& other);
 		virtual ~AudioBuffer();
 
-		AudioBuffer& operator= (const AudioBuffer& other);
+		AudioBuffer<T>& operator= (const AudioBuffer<T>& other);
 
 		unsigned int getNumSamples() const;
-		float getNextSample();
+		T getNextSample (T sampleValToReadBuf = 0); 	// if we're also reading data (from ADC for example)
+								// we write those samples back into the 'read' buffer
 		void pollToFillBuffers();
-		const float* const getBuffer1() const;
-		const float* const getBuffer2() const;
-		const std::set<IBufferCallback*>& getCallbacks() const;
-		void registerCallback (IBufferCallback* callback);
+		const T* const getBuffer1() const;
+		const T* const getBuffer2() const;
+
+		const std::set<IBufferCallback<T>*>& getCallbacks() const;
+		void registerCallback (IBufferCallback<T>* callback);
 	private:
-		float* m_Buffer1;
-		float* m_Buffer2;
+		T* m_Buffer1;
+		T* m_Buffer2;
 		unsigned int m_Pos;
-		std::set<IBufferCallback*> m_Callbacks;
+		std::set<IBufferCallback<T>*> m_Callbacks;
 
 		bool m_CurrentReadBlock;
 		bool m_NextReadBlockFilled;
 
-		float* getBuffer(bool writeBuffer);
+		T* getBuffer(bool writeBuffer);
 };
 
 #endif

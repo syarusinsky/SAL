@@ -6,11 +6,12 @@
  * an AudioBuffer. See AudioBuffer for more details.
 ****************************************************************/
 
+template <typename T=float>
 class IBufferCallback
 {
 	public:
 		virtual ~IBufferCallback() {}
-		virtual void call (float* writeBuffer) = 0;
+		virtual void call (T* writeBuffer) = 0;
 };
 
 #endif

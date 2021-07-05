@@ -11,7 +11,7 @@
 #ifdef TARGET_BUILD
 #define SAMPLE_RATE 40000
 #else
-#define SAMPLE_RATE 44100
+#define SAMPLE_RATE 96000
 #endif
 #define NYQUIST_FREQ (SAMPLE_RATE / 2)
 #ifdef TARGET_BUILD

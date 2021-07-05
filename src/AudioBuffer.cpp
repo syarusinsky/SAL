@@ -2,9 +2,10 @@
 
 #include "AudioConstants.hpp"
 
-AudioBuffer::AudioBuffer() :
-	m_Buffer1( new float[ABUFFER_SIZE] ),
-	m_Buffer2( new float[ABUFFER_SIZE] ),
+template <typename T>
+AudioBuffer<T>::AudioBuffer() :
+	m_Buffer1( new T[ABUFFER_SIZE] ),
+	m_Buffer2( new T[ABUFFER_SIZE] ),
 	m_Pos( 0 ),
 	m_Callbacks(),
 	m_CurrentReadBlock( false ),
@@ -17,55 +18,63 @@ AudioBuffer::AudioBuffer() :
 	}
 }
 
-AudioBuffer::AudioBuffer (const AudioBuffer& other) :
-	m_Buffer1( new float[ABUFFER_SIZE] ),
-	m_Buffer2( new float[ABUFFER_SIZE] ),
+template <typename T>
+AudioBuffer<T>::AudioBuffer (const AudioBuffer& other) :
+	m_Buffer1( new T[ABUFFER_SIZE] ),
+	m_Buffer2( new T[ABUFFER_SIZE] ),
 	m_Callbacks()
 {
-	const float* const buffer1Other = other.getBuffer1();
+	const T* const buffer1Other = other.getBuffer1();
 	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 		m_Buffer1[sample] = buffer1Other[sample];
 
-	const float* const buffer2Other = other.getBuffer2();
+	const T* const buffer2Other = other.getBuffer2();
 	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 		m_Buffer2[sample] = buffer2Other[sample];
 
-	for ( IBufferCallback* bC : other.getCallbacks() )
+	for ( IBufferCallback<T>* bC : other.getCallbacks() )
 		m_Callbacks.insert(bC);
 }
 
-AudioBuffer::~AudioBuffer()
+template <typename T>
+AudioBuffer<T>::~AudioBuffer()
 {
 	delete[] m_Buffer1;
 	delete[] m_Buffer2;
 }
 
-AudioBuffer& AudioBuffer::operator= (const AudioBuffer& other)
+template <typename T>
+AudioBuffer<T>& AudioBuffer<T>::operator= (const AudioBuffer& other)
 {
-	const float* const buffer1Other = other.getBuffer1();
+	const T* const buffer1Other = other.getBuffer1();
 	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 		m_Buffer1[sample] = buffer1Other[sample];
 
-	const float* const buffer2Other = other.getBuffer2();
+	const T* const buffer2Other = other.getBuffer2();
 	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 		m_Buffer2[sample] = buffer2Other[sample];
 
 	m_Callbacks.clear();
-	for ( IBufferCallback* bC : other.getCallbacks() )
+	for ( IBufferCallback<T>* bC : other.getCallbacks() )
 		m_Callbacks.insert( bC );
 
 
 	return *this;
 }
 
-unsigned int AudioBuffer::getNumSamples() const
+template <typename T>
+unsigned int AudioBuffer<T>::getNumSamples() const
 {
 	return ABUFFER_SIZE;
 }
 
-float AudioBuffer::getNextSample()
+template <typename T>
+T AudioBuffer<T>::getNextSample (T sampleValToReadBuf)
 {
-	float retVal = getBuffer( m_CurrentReadBlock )[m_Pos];
+	T* currentBuffer = this->getBuffer( m_CurrentReadBlock );
+	T retVal = currentBuffer[m_Pos];
+
+	currentBuffer[m_Pos] = sampleValToReadBuf;
 
 	m_Pos++;
 	if ( m_Pos >= ABUFFER_SIZE )
@@ -79,11 +88,12 @@ float AudioBuffer::getNextSample()
 	return retVal;
 }
 
-void AudioBuffer::pollToFillBuffers()
+template <typename T>
+void AudioBuffer<T>::pollToFillBuffers()
 {
 	if ( ! m_NextReadBlockFilled )
 	{
-		for ( IBufferCallback* callback : m_Callbacks )
+		for ( IBufferCallback<T>* callback : m_Callbacks )
 		{
 			callback->call( getBuffer(!m_CurrentReadBlock) );
 		}
@@ -92,22 +102,26 @@ void AudioBuffer::pollToFillBuffers()
 	}
 }
 
-const float* const AudioBuffer::getBuffer1() const
+template <typename T>
+const T* const AudioBuffer<T>::getBuffer1() const
 {
 	return m_Buffer1;
 }
 
-const float* const AudioBuffer::getBuffer2() const
+template <typename T>
+const T* const AudioBuffer<T>::getBuffer2() const
 {
 	return m_Buffer2;
 }
 
-const std::set<IBufferCallback*>& AudioBuffer::getCallbacks() const
+template <typename T>
+const std::set<IBufferCallback<T>*>& AudioBuffer<T>::getCallbacks() const
 {
 	return m_Callbacks;
 }
 
-void AudioBuffer::registerCallback (IBufferCallback* callback)
+template <typename T>
+void AudioBuffer<T>::registerCallback (IBufferCallback<T>* callback)
 {
 	if ( callback )
 	{
@@ -115,7 +129,8 @@ void AudioBuffer::registerCallback (IBufferCallback* callback)
 	}
 }
 
-float* AudioBuffer::getBuffer (bool writeBuffer)
+template <typename T>
+T* AudioBuffer<T>::getBuffer (bool writeBuffer)
 {
 	if ( writeBuffer )
 	{
@@ -126,3 +141,7 @@ float* AudioBuffer::getBuffer (bool writeBuffer)
 		return m_Buffer1;
 	}
 }
+
+// avoid linker errors
+template class AudioBuffer<float>;
+template class AudioBuffer<uint16_t>;
