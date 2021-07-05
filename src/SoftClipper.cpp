@@ -1,6 +1,7 @@
 #include "SoftClipper.hpp"
 
 #include <type_traits>
+#include <math.h>
 
 template <typename T>
 T SoftClipper<T>::processSample (T sampleVal)
@@ -13,21 +14,13 @@ T SoftClipper<T>::processSample (T sampleVal)
 		tempVal = ( static_cast<float>(sampleVal) * (1.0f / 4095.0f) * 2.0f ) - 1.0f;
 	}
 
-	if ( tempVal > 1.0f )
-	{
-		tempVal = 1.0f;
-	}
-	if ( tempVal < -1.0f )
-	{
-		tempVal = -1.0f;
-	}
-
 	// soft clip
 	tempVal = ( 1.5f * tempVal ) - ( 0.5f * tempVal * tempVal * tempVal );
+	tempVal = 0.5f * ( abs(sampleVal + tempVal) - abs(sampleVal - tempVal) ); // restricts to -1.0f to 1.0f
 
 	if (std::is_same<T, uint16_t>::value)
 	{
-		sampleVal = ( tempVal + 1.0f ) * 4095.0f;
+		sampleVal = static_cast<uint16_t>( (tempVal + 1.0f) * 4095.0f );
 	}
 	else
 	{

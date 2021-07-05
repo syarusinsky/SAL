@@ -9,7 +9,7 @@
 #include "IOscillator.hpp"
 #include "IBufferCallback.hpp"
 
-class PolyBLEPOsc : public IOscillator, public IBufferCallback
+class PolyBLEPOsc : public IOscillator, public IBufferCallback<float>
 {
 	public:
 		PolyBLEPOsc();
