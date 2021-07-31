@@ -4,10 +4,10 @@
 
 template <typename T>
 AllpassCombFilter<T>::AllpassCombFilter (unsigned int delayLength, float feedbackGain, T initVal) :
-	m_DelayLength( delayLength ),
+	m_DelayLength( delayLength + 1 ),
 	m_DelayBuffer( new T[m_DelayLength] ),
-	m_DelayWriteIncr( delayLength - 1 ),
-	m_DelayReadIncr( 0 ),
+	m_DelayWriteIncr( 0 ),
+	m_DelayReadIncr( 1 ),
 	m_FeedbackGain( feedbackGain )
 {
 	for ( unsigned int sample = 0; sample < m_DelayLength; sample++ )
