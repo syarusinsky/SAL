@@ -30,7 +30,7 @@ enum class EGModDestination : unsigned int
 class Operator : public IModulationSource, public IKeyEventListener, public IPitchEventListener
 {
 	public:
-		Operator (IOscillator* osc, IEnvelopeGenerator* eg, IFilter* filt, float amplitude, float frequency);
+		Operator (IOscillator* osc, IEnvelopeGenerator* eg, IFilter<float>* filt, float amplitude, float frequency);
 		~Operator() override;
 
 		float nextSample();
@@ -89,7 +89,7 @@ class Operator : public IModulationSource, public IKeyEventListener, public IPit
 	private:
 		IOscillator* m_Osc;
 		IEnvelopeGenerator* m_EG;
-		IFilter* m_Filter;
+		IFilter<float>* m_Filter;
 		float m_FilterCenterFreq;
 		bool m_UseRatio;
 		std::set<IModulationSource*> m_ModSources;

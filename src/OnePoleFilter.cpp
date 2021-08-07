@@ -2,6 +2,7 @@
 #include "AudioConstants.hpp"
 #include <algorithm>
 #include <math.h>
+#include <cstdint>
 
 template <typename T>
 OnePoleFilter<T>::OnePoleFilter() :

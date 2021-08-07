@@ -6,7 +6,7 @@
 #include "IEnvelopeGenerator.hpp"
 #include <math.h>
 
-Operator::Operator(IOscillator* wave, IEnvelopeGenerator* eg, IFilter* filt, float amplitude, float frequency) :
+Operator::Operator(IOscillator* wave, IEnvelopeGenerator* eg, IFilter<float>* filt, float amplitude, float frequency) :
 	m_Osc( wave ),
 	m_EG( eg ),
 	m_Filter( filt ),
