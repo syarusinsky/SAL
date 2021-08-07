@@ -7,12 +7,13 @@
  * resonance.
 *****************************************************************/
 
+template <typename T>
 class IFilter
 {
 	public:
 		virtual ~IFilter() {}
 
-		virtual float processSample (float sample) = 0;
+		virtual T processSample (T sample) = 0;
 		virtual void setCoefficients (float frequency) = 0;
 		virtual void setResonance (float resonance) = 0;
 		virtual float getResonance() = 0;

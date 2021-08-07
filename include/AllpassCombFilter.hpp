@@ -8,16 +8,20 @@
  * be set.
 *****************************************************************/
 
+#include "IBufferCallback.hpp"
+
 template <typename T>
-class AllpassCombFilter
+class AllpassCombFilter : public IBufferCallback<T>
 {
 	public:
-		AllpassCombFilter (unsigned int delayLength, float feedbackGain, T initVal); // initVal is the value to initialize the delay buffer with
+		AllpassCombFilter (unsigned int delayLength, float feedbackGain, T initVal = 0); // initVal is to initialize the delay buffer with
 		~AllpassCombFilter();
 
 		T processSample (T sampleVal);
 
 		void setFeedbackGain (float feedbackGain);
+
+		void call (T* writeBuffer) override;
 
 	private:
 		unsigned int 	m_DelayLength;
@@ -26,6 +30,8 @@ class AllpassCombFilter
 		unsigned int 	m_DelayReadIncr;
 
 		float 		m_FeedbackGain;
+
+		inline T processSampleHelper (T sampleVal);
 };
 
 #endif // ALLPASSCOMBFILTER_HPP

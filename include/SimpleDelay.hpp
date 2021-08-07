@@ -9,8 +9,10 @@
  * length is within the maximum delay length.
 *****************************************************************/
 
+#include "IBufferCallback.hpp"
+
 template <typename T>
-class SimpleDelay
+class SimpleDelay : public IBufferCallback<T>
 {
 	public:
 		// initVal is the value to initialize the delay buffer with
@@ -21,11 +23,15 @@ class SimpleDelay
 
 		void setDelayLength (unsigned int delayLength); // must be within maximum delay length defined in constructor
 
+		void call (T* writeBuffer) override;
+
 	private:
 		unsigned int 	m_DelayLength;
 		T* 		m_DelayBuffer;
 		unsigned int 	m_DelayWriteIncr;
 		unsigned int 	m_DelayReadIncr;
+
+		inline T processSampleHelper (T sampleVal);
 };
 
 #endif // SIMPLEDELAY_HPP

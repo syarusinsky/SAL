@@ -1,5 +1,7 @@
 #include "SimpleDelay.hpp"
 
+#include "AudioConstants.hpp"
+
 #include <stdint.h>
 #include <cmath>
 
@@ -27,6 +29,12 @@ SimpleDelay<T>::~SimpleDelay()
 template <typename T>
 T SimpleDelay<T>::processSample (T sampleVal)
 {
+	return this->processSampleHelper( sampleVal );
+}
+
+template <typename T>
+T SimpleDelay<T>::processSampleHelper (T sampleVal)
+{
 	T delayedVal = m_DelayBuffer[m_DelayReadIncr];
 	m_DelayBuffer[m_DelayWriteIncr] = sampleVal;
 
@@ -40,6 +48,15 @@ template <typename T>
 void SimpleDelay<T>::setDelayLength (unsigned int delayLength)
 {
 	m_DelayReadIncr = ( m_DelayWriteIncr + (m_DelayLength - delayLength) ) % m_DelayLength;
+}
+
+template <typename T>
+void SimpleDelay<T>::call (T* writeBuffer)
+{
+	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
+	{
+		writeBuffer[sample] = this->processSampleHelper( writeBuffer[sample] );
+	}
 }
 
 // avoid linker errors

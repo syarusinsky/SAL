@@ -10,22 +10,28 @@
 *****************************************************************/
 
 #include "IFilter.hpp"
+#include "IBufferCallback.hpp"
 
-class OnePoleFilter : public IFilter
+template <typename T>
+class OnePoleFilter : public IFilter<T>, public IBufferCallback<T>
 {
 	public:
 		OnePoleFilter();
 		~OnePoleFilter() override;
 
-		float processSample (float sample) override;
+		T processSample (T sample) override;
 		void setCoefficients (float frequency) override;
 		void setResonance (float resonance) override {}
 		float getResonance() override { return 0.0f; }
 
+		void call (T* writeBuffer) override;
+
 	private:
 		float m_A0;
 		float m_B1;
-		float m_PrevSample;
+		T m_PrevSample;
+
+		inline T processSampleHelper (T sample);
 };
 
 #endif // ONEPOLEFILTER_HPP
