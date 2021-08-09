@@ -19,9 +19,12 @@ class AllpassCombFilter : public IBufferCallback<T>
 
 		T processSample (T sampleVal);
 
+		void setDelayLength (unsigned int delayLength); // must be less than or equal to initially defined delay length
 		void setFeedbackGain (float feedbackGain);
 
 		void call (T* writeBuffer) override;
+		// modSource should be an array of ABUFFER_SIZE floats between 0.0f and 1.0f that modulates delay length by numModSamples
+		void call (T* writeBuffer, unsigned int numModSamples, float* modSource); // numModSamples must be less than or equal to delayLength
 
 	private:
 		unsigned int 	m_DelayLength;

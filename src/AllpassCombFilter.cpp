@@ -31,6 +31,12 @@ T AllpassCombFilter<T>::processSample (T sampleVal)
 }
 
 template <typename T>
+void AllpassCombFilter<T>::setDelayLength (unsigned int delayLength)
+{
+	m_DelayReadIncr = ( m_DelayWriteIncr + (m_DelayLength - delayLength) ) % m_DelayLength;
+}
+
+template <typename T>
 void AllpassCombFilter<T>::setFeedbackGain (float feedbackGain)
 {
 	m_FeedbackGain = feedbackGain;
@@ -42,6 +48,17 @@ void AllpassCombFilter<T>::call (T* writeBuffer)
 	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
 		writeBuffer[sample] = this->processSampleHelper( writeBuffer[sample] );
+	}
+}
+
+template <typename T>
+void AllpassCombFilter<T>::call (T* writeBuffer, unsigned int numModSamples, float* modSource)
+{
+	unsigned int unmodulatedSamples = m_DelayLength - numModSamples;
+	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
+	{
+		writeBuffer[sample] = this->processSampleHelper( writeBuffer[sample] );
+		this->setDelayLength( unmodulatedSamples + static_cast<unsigned int>(numModSamples * modSource[sample]) );
 	}
 }
 
