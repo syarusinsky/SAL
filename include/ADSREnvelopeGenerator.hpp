@@ -12,8 +12,6 @@
 
 #include "IEnvelopeGenerator.hpp"
 
-class IResponse;
-
 enum EGStage
 {
 	ATTACK,
@@ -22,11 +20,12 @@ enum EGStage
 	RELEASE
 };
 
+template <typename Response>
 class ADSREnvelopeGenerator : public IEnvelopeGenerator
 {
 	public:
 		ADSREnvelopeGenerator (const float atkSec, const float decSec, const float susLVL, const float relSec,
-					IResponse* atkResponse, IResponse* decResponse, IResponse* relResponse);
+					Response* atkResponse, Response* decResponse, Response* relResponse);
 		~ADSREnvelopeGenerator() override;
 
 		float nextValue() override;
@@ -35,9 +34,9 @@ class ADSREnvelopeGenerator : public IEnvelopeGenerator
 
 		void onKeyEvent (const KeyEvent& keyEvent) override;
 
-		void setAttackResponse (IResponse* response);
-		void setDecayResponse (IResponse* response);
-		void setReleaseResponse (IResponse* response);
+		void setAttackResponse (Response* response);
+		void setDecayResponse (Response* response);
+		void setReleaseResponse (Response* response);
 		void setAttack (float seconds, float expo);
 		void setDecay (float seconds, float expo);
 		void setSustain (float lvl);
@@ -65,9 +64,9 @@ class ADSREnvelopeGenerator : public IEnvelopeGenerator
 		float m_CurrentLvl;
 		bool  m_JustEnteredRelease; // used to signal when to set release (since can happen at any lvl)
 
-		IResponse* m_AttackResponse;
-		IResponse* m_DecayResponse;
-		IResponse* m_ReleaseResponse;
+		Response* m_AttackResponse;
+		Response* m_DecayResponse;
+		Response* m_ReleaseResponse;
 };
 
 #endif // ADSRENVELOPEGENERATOR_HPP

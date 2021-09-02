@@ -1,13 +1,15 @@
 #include "ADSREnvelopeGenerator.hpp"
 
-#include "IResponse.hpp"
 #include "AudioConstants.hpp"
+#include "LinearResponse.hpp"
+#include "ExponentialResponse.hpp"
 #include <algorithm>
 #include <cmath>
 
-ADSREnvelopeGenerator::ADSREnvelopeGenerator (const float atkSec, const float decSec, const float susLvl,
-					const float relSec, IResponse* atkResponse, IResponse* decResponse,
-					IResponse* relResponse) :
+template <typename Response>
+ADSREnvelopeGenerator<Response>::ADSREnvelopeGenerator (const float atkSec, const float decSec, const float susLvl,
+					const float relSec, Response* atkResponse, Response* decResponse,
+					Response* relResponse) :
 	m_Attack( 0.0f ),
 	m_AttackSecs( atkSec ),
 	m_Decay( 0.0f ),
@@ -37,11 +39,13 @@ ADSREnvelopeGenerator::ADSREnvelopeGenerator (const float atkSec, const float de
 	this->toEnd();
 }
 
-ADSREnvelopeGenerator::~ADSREnvelopeGenerator()
+template <typename Response>
+ADSREnvelopeGenerator<Response>::~ADSREnvelopeGenerator()
 {
 }
 
-float ADSREnvelopeGenerator::nextValue()
+template <typename Response>
+float ADSREnvelopeGenerator<Response>::nextValue()
 {
 	m_SustainAtResponse = m_ReleaseResponse->response( m_Sustain, 0.0f, 1.0f );
 	float output = m_SustainAtResponse;
@@ -93,19 +97,22 @@ float ADSREnvelopeGenerator::nextValue()
 	return output;
 }
 
-void ADSREnvelopeGenerator::toStart()
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::toStart()
 {
 	m_Stage = ATTACK;
 	m_CurrentLvl = 0.0f;
 }
 
-void ADSREnvelopeGenerator::toEnd()
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::toEnd()
 {
 	m_Stage = RELEASE;
 	m_CurrentLvl = 0.0f;
 }
 
-void ADSREnvelopeGenerator::onKeyEvent (const KeyEvent& keyEvent)
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::onKeyEvent (const KeyEvent& keyEvent)
 {
 	if ( keyEvent.pressed() == KeyPressedEnum::PRESSED )
 	{
@@ -118,22 +125,26 @@ void ADSREnvelopeGenerator::onKeyEvent (const KeyEvent& keyEvent)
 	}
 }
 
-void ADSREnvelopeGenerator::setAttackResponse (IResponse* response)
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::setAttackResponse (Response* response)
 {
 	m_AttackResponse = response;
 }
 
-void ADSREnvelopeGenerator::setDecayResponse (IResponse* response)
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::setDecayResponse (Response* response)
 {
 	m_DecayResponse = response;
 }
 
-void ADSREnvelopeGenerator::setReleaseResponse (IResponse* response)
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::setReleaseResponse (Response* response)
 {
 	m_ReleaseResponse = response;
 }
 
-void ADSREnvelopeGenerator::setAttack (float seconds, float expo)
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::setAttack (float seconds, float expo)
 {
 	m_AttackSecs = seconds;
 	m_Attack = (1.0f / SAMPLE_RATE) / seconds;
@@ -143,7 +154,8 @@ void ADSREnvelopeGenerator::setAttack (float seconds, float expo)
 		{ m_Attack  = std::numeric_limits<float>::max(); }
 }
 
-void ADSREnvelopeGenerator::setDecay (float seconds, float expo)
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::setDecay (float seconds, float expo)
 {
 	m_DecaySecs = seconds;
 	m_Decay = ( (1.0f - m_SustainAtResponse) / SAMPLE_RATE ) / seconds;
@@ -153,7 +165,8 @@ void ADSREnvelopeGenerator::setDecay (float seconds, float expo)
 		{ m_Decay   = std::numeric_limits<float>::max(); }
 }
 
-void ADSREnvelopeGenerator::setSustain (float lvl)
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::setSustain (float lvl)
 {
 	m_Sustain = lvl;
 	m_SustainAtResponse = m_ReleaseResponse->response( m_Sustain, 0.0f, 1.0f );
@@ -162,7 +175,8 @@ void ADSREnvelopeGenerator::setSustain (float lvl)
 	setDecay( m_DecaySecs, m_DecayResponse->getSlope() );
 }
 
-void ADSREnvelopeGenerator::setRelease (float seconds, float expo)
+template <typename Response>
+void ADSREnvelopeGenerator<Response>::setRelease (float seconds, float expo)
 {
 	m_ReleaseSecs = seconds;
 	m_Release = (m_CurrentLvl / SAMPLE_RATE) / seconds;
@@ -172,37 +186,48 @@ void ADSREnvelopeGenerator::setRelease (float seconds, float expo)
 		{ m_Release = std::numeric_limits<float>::max(); }
 }
 
-float ADSREnvelopeGenerator::getAttack()
+template <typename Response>
+float ADSREnvelopeGenerator<Response>::getAttack()
 {
 	return m_AttackSecs;
 }
 
-float ADSREnvelopeGenerator::getDecay()
+template <typename Response>
+float ADSREnvelopeGenerator<Response>::getDecay()
 {
 	return m_DecaySecs;
 }
 
-float ADSREnvelopeGenerator::getSustain()
+template <typename Response>
+float ADSREnvelopeGenerator<Response>::getSustain()
 {
 	return m_Sustain;
 }
 
-float ADSREnvelopeGenerator::getRelease()
+template <typename Response>
+float ADSREnvelopeGenerator<Response>::getRelease()
 {
 	return m_ReleaseSecs;
 }
 
-float ADSREnvelopeGenerator::getAttackExpo()
+template <typename Response>
+float ADSREnvelopeGenerator<Response>::getAttackExpo()
 {
 	return m_AttackResponse->getSlope();
 }
 
-float ADSREnvelopeGenerator::getDecayExpo()
+template <typename Response>
+float ADSREnvelopeGenerator<Response>::getDecayExpo()
 {
 	return m_DecayResponse->getSlope();
 }
 
-float ADSREnvelopeGenerator::getReleaseExpo()
+template <typename Response>
+float ADSREnvelopeGenerator<Response>::getReleaseExpo()
 {
 	return m_ReleaseResponse->getSlope();
 }
+
+// avoid linker errors
+template class ADSREnvelopeGenerator<LinearResponse>;
+template class ADSREnvelopeGenerator<ExponentialResponse>;
