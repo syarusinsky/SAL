@@ -98,6 +98,12 @@ float ADSREnvelopeGenerator<Response>::nextValue()
 }
 
 template <typename Response>
+float ADSREnvelopeGenerator<Response>::currentValue()
+{
+	return m_CurrentLvl;
+}
+
+template <typename Response>
 void ADSREnvelopeGenerator<Response>::toStart()
 {
 	m_Stage = ATTACK;

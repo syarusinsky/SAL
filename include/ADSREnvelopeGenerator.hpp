@@ -29,6 +29,7 @@ class ADSREnvelopeGenerator : public IEnvelopeGenerator
 		~ADSREnvelopeGenerator() override;
 
 		float nextValue() override;
+		float currentValue() override;
 		void toStart() override;
 		void toEnd() override;
 

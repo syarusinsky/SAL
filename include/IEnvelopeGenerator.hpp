@@ -14,6 +14,7 @@ class IEnvelopeGenerator : public IKeyEventListener
 	public:
 		virtual ~IEnvelopeGenerator() {}
 		virtual float nextValue() = 0;
+		virtual float currentValue() = 0;
 		virtual void toStart() = 0;
 		virtual void toEnd() = 0;
 
