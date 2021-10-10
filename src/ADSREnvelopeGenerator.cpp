@@ -5,6 +5,7 @@
 #include "ExponentialResponse.hpp"
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 template <typename Response>
 ADSREnvelopeGenerator<Response>::ADSREnvelopeGenerator (const float atkSec, const float decSec, const float susLvl,

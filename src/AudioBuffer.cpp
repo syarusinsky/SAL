@@ -9,7 +9,7 @@ AudioBuffer<T>::AudioBuffer() :
 	m_Pos( 0 ),
 	m_Callbacks(),
 	m_CurrentReadBlock( false ),
-	m_NextReadBlockFilled( false )
+	m_NextReadBlockFilled( true )
 {
 	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
