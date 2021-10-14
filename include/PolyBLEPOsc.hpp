@@ -20,9 +20,12 @@ class PolyBLEPOsc : public IOscillator, public IBufferCallback<float>
 		void setOscillatorMode (const OscillatorMode& mode) override;
 		OscillatorMode getOscillatorMode() override;
 
+		void applyTriangleFilter(); // if using triangle, this should be called at least once per block
+
 		void call (float* writeBuffer) override;
 
 	private:
+		float m_Frequency;
 		float m_Phase;
 		float m_PhaseIncr;
 		float m_LastOutput;

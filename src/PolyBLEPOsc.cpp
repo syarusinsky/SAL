@@ -2,9 +2,13 @@
 
 #include "AudioConstants.hpp"
 #include <limits>
-#include <math.h>
+#include <cmath>
+#if defined(TARGET_BUILD) && ( defined(ARM_MATH_CM7) || defined(ARM_MATH_CM4) )
+#include <arm_math.h>
+#endif // TARGET_BUILD and ARM_MATH
 
 PolyBLEPOsc::PolyBLEPOsc() :
+	m_Frequency( 0.0f ),
 	m_Phase( 0.0f ),
 	m_PhaseIncr( 0.0f ),
 	m_LastOutput( 0.0f ),
@@ -89,7 +93,11 @@ float PolyBLEPOsc::nextSample()
 	}
 	else
 	{
-		output = sin( m_Phase );
+#if defined(TARGET_BUILD) && ( defined(ARM_MATH_CM7) || defined(ARM_MATH_CM4) )
+		output = arm_sin_f32( m_Phase ); // arm fast math (table based)
+#else
+		output = std::sin( m_Phase );
+#endif // TARGET_BUILD and ARM_MATH
 	}
 
 	// increment and wrap phase
@@ -108,9 +116,8 @@ float PolyBLEPOsc::nextSample()
 
 void PolyBLEPOsc::setFrequency (float frequency)
 {
-	m_PhaseIncr = (frequency * 2.0f * M_PI) / SAMPLE_RATE;
-	m_B1 = expf( -2.0f * M_PI * (std::abs(frequency) / SAMPLE_RATE / 2.0f) ); // we need the abs value, since freq can be negative
-	m_A0 = 1.0f - m_B1;
+	m_Frequency = frequency;
+	m_PhaseIncr = (m_Frequency * 2.0f * M_PI) / SAMPLE_RATE;
 }
 
 void PolyBLEPOsc::setOscillatorMode (const OscillatorMode& mode)
@@ -125,8 +132,16 @@ OscillatorMode PolyBLEPOsc::getOscillatorMode()
 
 void PolyBLEPOsc::call (float* writeBuffer)
 {
+	this->applyTriangleFilter();
+
 	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
 		writeBuffer[sample] = this->nextSample();
 	}
+}
+
+void PolyBLEPOsc::applyTriangleFilter()
+{
+	m_B1 = expf( -2.0f * M_PI * (std::abs(m_Frequency) / SAMPLE_RATE / 2.0f) ); // we need the abs value, since freq can be negative
+	m_A0 = 1.0f - m_B1;
 }
