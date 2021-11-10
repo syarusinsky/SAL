@@ -38,10 +38,10 @@ class AudioBuffer
 	private:
 		T* m_Buffer1;
 		T* m_Buffer2;
+		T* m_CurrentBuffer;
 		unsigned int m_Pos;
 		std::set<IBufferCallback<T>*> m_Callbacks;
 
-		bool m_CurrentReadBlock;
 		bool m_NextReadBlockFilled;
 
 		T* getBuffer(bool writeBuffer);
