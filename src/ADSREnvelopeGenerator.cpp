@@ -157,8 +157,8 @@ void ADSREnvelopeGenerator<Response>::setAttack (float seconds, float expo)
 	m_Attack = (1.0f / SAMPLE_RATE) / seconds;
 	m_AttackResponse->setSlope( expo );
 
-	if ( m_Attack  == std::numeric_limits<float>::infinity() || std::isnan(m_Attack) )
-		{ m_Attack  = std::numeric_limits<float>::max(); }
+	if ( m_AttackSecs == 0.0f || m_Attack == std::numeric_limits<float>::infinity() || std::isnan(m_Attack) )
+		{ m_Attack = std::numeric_limits<float>::max(); }
 }
 
 template <typename Response>
@@ -168,8 +168,8 @@ void ADSREnvelopeGenerator<Response>::setDecay (float seconds, float expo)
 	m_Decay = ( (1.0f - m_SustainAtResponse) / SAMPLE_RATE ) / seconds;
 	m_DecayResponse->setSlope( expo );
 
-	if ( m_Decay   == std::numeric_limits<float>::infinity() || std::isnan(m_Decay) )
-		{ m_Decay   = std::numeric_limits<float>::max(); }
+	if ( m_DecaySecs == 0.0f || m_Decay == std::numeric_limits<float>::infinity() || std::isnan(m_Decay) )
+		{ m_Decay = std::numeric_limits<float>::max(); }
 }
 
 template <typename Response>
@@ -189,7 +189,7 @@ void ADSREnvelopeGenerator<Response>::setRelease (float seconds, float expo)
 	m_Release = (m_CurrentLvl / SAMPLE_RATE) / seconds;
 	m_ReleaseResponse->setSlope( expo );
 
-	if ( m_Release == std::numeric_limits<float>::infinity() || std::isnan(m_Release) )
+	if ( m_ReleaseSecs == 0.0f || m_Release == std::numeric_limits<float>::infinity() || std::isnan(m_Release) )
 		{ m_Release = std::numeric_limits<float>::max(); }
 }
 
