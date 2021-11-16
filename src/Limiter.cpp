@@ -1,14 +1,12 @@
 #include "Limiter.hpp"
 
-#include "AudioConstants.hpp"
-
-#include <cmath>
+#include "Common.hpp"
 
 Limiter::Limiter (float attackTime, float releaseTime, float threshold, float makeupGain) :
 	m_AttackTime( attackTime ),
-	m_AttackCoeff( (1.0f - pow(M_E, (-2.2f * SAMPLE_PERIOD) / (m_AttackTime / 1000.0f))) * 2 ),
+	m_AttackCoeff( getFilterCoeff(m_AttackTime) ),
 	m_ReleaseTime( releaseTime ),
-	m_ReleaseCoeff( (1.0f - pow(M_E, (-2.2f * SAMPLE_PERIOD) / (m_ReleaseTime / 1000.0f))) * 2 ),
+	m_ReleaseCoeff( getFilterCoeff(m_ReleaseTime) ),
 	m_Threshold( threshold ),
 	m_MakeupGain( makeupGain ),
 	m_Peak( 0.0f ),
