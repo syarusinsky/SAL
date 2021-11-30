@@ -11,6 +11,7 @@
 #else
 #define SAMPLE_RATE 96000
 #endif
+#define SAMPLE_PERIOD (1.0f / static_cast<float>(SAMPLE_RATE))
 #define NYQUIST_FREQ (SAMPLE_RATE / 2)
 #ifdef TARGET_BUILD
 #define ABUFFER_SIZE 256

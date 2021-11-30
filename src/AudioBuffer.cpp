@@ -6,9 +6,9 @@ template <typename T>
 AudioBuffer<T>::AudioBuffer() :
 	m_Buffer1( new T[ABUFFER_SIZE] ),
 	m_Buffer2( new T[ABUFFER_SIZE] ),
+	m_CurrentBuffer( m_Buffer1 ),
 	m_Pos( 0 ),
 	m_Callbacks(),
-	m_CurrentReadBlock( false ),
 	m_NextReadBlockFilled( true )
 {
 	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
@@ -71,18 +71,17 @@ unsigned int AudioBuffer<T>::getNumSamples() const
 template <typename T>
 T AudioBuffer<T>::getNextSample (T sampleValToReadBuf)
 {
-	T* currentBuffer = this->getBuffer( m_CurrentReadBlock );
-	T retVal = currentBuffer[m_Pos];
+	T retVal = m_CurrentBuffer[m_Pos];
 
-	currentBuffer[m_Pos] = sampleValToReadBuf;
+	m_CurrentBuffer[m_Pos] = sampleValToReadBuf;
 
 	m_Pos++;
-	if ( m_Pos >= ABUFFER_SIZE )
+	if ( m_Pos == ABUFFER_SIZE )
 	{
 		m_Pos = 0;
 
-		m_CurrentReadBlock = ! m_CurrentReadBlock;
 		m_NextReadBlockFilled = false;
+		m_CurrentBuffer = ( m_CurrentBuffer == m_Buffer1 ) ? m_Buffer2 : m_Buffer1;
 	}
 
 	return retVal;
@@ -93,9 +92,11 @@ void AudioBuffer<T>::pollToFillBuffers()
 {
 	if ( ! m_NextReadBlockFilled )
 	{
+		T* nextBuffer = ( m_CurrentBuffer == m_Buffer1 ) ? m_Buffer2 : m_Buffer1;
+
 		for ( IBufferCallback<T>* callback : m_Callbacks )
 		{
-			callback->call( getBuffer(!m_CurrentReadBlock) );
+			callback->call( nextBuffer );
 		}
 
 		m_NextReadBlockFilled = true;
