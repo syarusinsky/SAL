@@ -13,6 +13,7 @@
 
 #include "IBufferCallback.hpp"
 
+#include "AudioConstants.hpp"
 #include <set>
 #include <stdint.h>
 
@@ -36,10 +37,10 @@ class AudioBuffer
 		const std::set<IBufferCallback<T>*>& getCallbacks() const;
 		void registerCallback (IBufferCallback<T>* callback);
 	private:
-		T* m_Buffer1;
-		T* m_Buffer2;
-		T* m_CurrentBuffer;
-		unsigned int m_Pos;
+		T 		m_Buffer1[ABUFFER_SIZE];
+		T 		m_Buffer2[ABUFFER_SIZE];
+		T* 		m_CurrentBuffer;
+		unsigned int 	m_Pos;
 		std::set<IBufferCallback<T>*> m_Callbacks;
 
 		bool m_NextReadBlockFilled;

@@ -4,24 +4,19 @@
 
 template <typename T>
 AudioBuffer<T>::AudioBuffer() :
-	m_Buffer1( new T[ABUFFER_SIZE] ),
-	m_Buffer2( new T[ABUFFER_SIZE] ),
+	m_Buffer1{ 0 },
+	m_Buffer2{ 0 },
 	m_CurrentBuffer( m_Buffer1 ),
 	m_Pos( 0 ),
 	m_Callbacks(),
 	m_NextReadBlockFilled( true )
 {
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-	{
-		m_Buffer1[sample] = 0;
-		m_Buffer2[sample] = 0;
-	}
 }
 
 template <typename T>
 AudioBuffer<T>::AudioBuffer (const AudioBuffer& other) :
-	m_Buffer1( new T[ABUFFER_SIZE] ),
-	m_Buffer2( new T[ABUFFER_SIZE] ),
+	m_Buffer1{ 0 },
+	m_Buffer2{ 0 },
 	m_Callbacks()
 {
 	const T* const buffer1Other = other.getBuffer1();
@@ -39,8 +34,6 @@ AudioBuffer<T>::AudioBuffer (const AudioBuffer& other) :
 template <typename T>
 AudioBuffer<T>::~AudioBuffer()
 {
-	delete[] m_Buffer1;
-	delete[] m_Buffer2;
 }
 
 template <typename T>
