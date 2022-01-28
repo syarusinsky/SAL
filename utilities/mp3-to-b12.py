@@ -1,5 +1,5 @@
 # A simple script to turn an mp3 file into a b12 compressed audio file
-# to use, run "python mp3-to-b12.py -FILENAME_WITH_EXTENSION -WRITE_TO_MONO"
+# to use, run "python mp3-to-b12.py -FILENAME_WITH_EXTENSION -WRITE_TO_MONO -SAMPLE_RATE"
 
 import sys
 import os
@@ -42,8 +42,21 @@ if len(sys.argv) == 1:
 else:
     file_name = sys.argv[1]
 
+requested_sample_rate = 40000
+if len(sys.argv) == 4: # requesting sample rate
+    try:
+        requested_sample_rate = int( sys.argv[3] )
+    except ValueError:
+        print( "ERROR: sample rate argument must be integer between 40000 and 96000" )
+        quit()
+    if isinstance(requested_sample_rate, int) and requested_sample_rate >= 40000 and requested_sample_rate <= 96000:
+        requested_sample_rate = requested_sample_rate # just leaving this in here in case I wanna do anything else
+    else:
+        print( "ERROR: sample rate argument must be integer between 40000 and 96000" )
+        quit()
+
 write_mono = False
-if len(sys.argv) == 3: # requesting stereo or mono
+if len(sys.argv) == 3 or len(sys.argv) == 4: # requesting stereo or mono
     if sys.argv[2] == "true" :
         write_mono = True
     elif sys.argv[2] == "false" :
@@ -54,7 +67,7 @@ if len(sys.argv) == 3: # requesting stereo or mono
 
 # open files
 try:
-    mp3_file, sample_rate = librosa.load( os.path.join(this_dir, file_name), sr=40000, mono=write_mono )
+    mp3_file, sample_rate = librosa.load( os.path.join(this_dir, file_name), sr=requested_sample_rate, mono=write_mono )
     output_file_name_no_ext = file_name.replace( ".mp3", "" );
 
     if ( write_mono and len(output_file_name_no_ext) > 8 ) or ( not write_mono and len(output_file_name_no_ext) > 7 ) :

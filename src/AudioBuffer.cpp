@@ -139,3 +139,4 @@ T* AudioBuffer<T>::getBuffer (bool writeBuffer)
 // avoid linker errors
 template class AudioBuffer<float>;
 template class AudioBuffer<uint16_t>;
+template class AudioBuffer<int16_t>;
