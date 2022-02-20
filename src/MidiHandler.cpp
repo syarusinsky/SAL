@@ -11,6 +11,10 @@ MidiHandler::MidiHandler() :
 	m_WorkingDataByteIndex( 0 ),
 	m_CurrentWriteIndex( 0 ),
 	m_CurrentReadIndex( 0 ),
+	m_ShouldPublishMidi( true ),
+	m_ShouldPublishNoteOn( true ),
+	m_ShouldPublishNoteOff( true ),
+	m_ShouldPublishPitch( true ),
 	m_SemitonesToPitchBend( 1 )
 {
 }
@@ -110,6 +114,7 @@ void MidiHandler::processByte (uint8_t byte)
 		if ( m_WorkingDataByteIndex == m_WorkingMessageNumDataBytes)
 		{
 			midiEvent->setValid( true );
+			midiEvent->setNumBytes( 1 );
 		}
 	}
 	else // if data byte
@@ -126,6 +131,7 @@ void MidiHandler::processByte (uint8_t byte)
 		{
 			midiMessageBytes[m_WorkingDataByteIndex] = byte;
 			midiEvent->setValid( true );
+			midiEvent->setNumBytes( m_WorkingMessageNumDataBytes + 1 );
 		}
 		else
 		{
@@ -143,6 +149,7 @@ void MidiHandler::processByte (uint8_t byte)
 			if ( m_WorkingDataByteIndex == m_WorkingMessageNumDataBytes )
 			{
 				midiEvent->setValid( true );
+				midiEvent->setNumBytes( m_WorkingMessageNumDataBytes + 1 );
 			}
 		}
 	}
@@ -170,9 +177,9 @@ void MidiHandler::dispatchEvents()
 		MidiEvent& midiEvent = *(nextMidiEvent);
 		midiEvent.setValid( false );
 		const uint8_t* const midiRawData = midiEvent.getRawData();
-		IMidiEventListener::PublishEvent( midiEvent );
+		if ( m_ShouldPublishMidi ) IMidiEventListener::PublishEvent( midiEvent );
 
-		if ( midiEvent.isPitchBend() )
+		if ( m_ShouldPublishPitch && midiEvent.isPitchBend() )
 		{
 			uint8_t lsb = midiRawData[1];
 			uint8_t msb = midiRawData[2];
@@ -186,11 +193,11 @@ void MidiHandler::dispatchEvents()
 
 			IPitchEventListener::PublishEvent( PitchEvent(pitchBendFactor) );
 		}
-		else if ( midiEvent.isNoteOn() )
+		else if ( m_ShouldPublishNoteOn && midiEvent.isNoteOn() )
 		{
 			IKeyEventListener::PublishEvent( KeyEvent(KeyPressedEnum::PRESSED, midiRawData[1], midiRawData[2]) );
 		}
-		else if ( midiEvent.isNoteOff() )
+		else if ( m_ShouldPublishNoteOff && midiEvent.isNoteOff() )
 		{
 			IKeyEventListener::PublishEvent( KeyEvent(KeyPressedEnum::RELEASED, midiRawData[1], midiRawData[2]) );
 		}

@@ -32,9 +32,13 @@ class MidiEvent : public IEvent
 		bool isValid() const;
 		void setValid (bool valid);
 
+		unsigned int getNumBytes() const;
+		void setNumBytes (unsigned int numBytes);
+
 	private:
-		uint8_t m_Bytes[MAX_MIDI_MESSAGE_SIZE];
-		bool 	m_Valid;
+		uint8_t 	m_Bytes[MAX_MIDI_MESSAGE_SIZE];
+		bool 		m_Valid;
+		unsigned int 	m_NumBytes;
 };
 
 class IMidiEventListener : public IEventListener

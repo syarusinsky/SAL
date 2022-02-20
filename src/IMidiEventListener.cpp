@@ -8,14 +8,16 @@ EventDispatcher<IMidiEventListener, MidiEvent, &IMidiEventListener::onMidiEvent>
 MidiEvent::MidiEvent() :
 	IEvent( 0 ),
 	m_Bytes{ 0 },
-	m_Valid( false )
+	m_Valid( false ),
+	m_NumBytes( 0 )
 {
 }
 
 MidiEvent::MidiEvent (uint8_t byte1, bool valid) :
 	IEvent( 0 ),
 	m_Bytes{ 0 },
-	m_Valid( valid )
+	m_Valid( valid ),
+	m_NumBytes( 1 )
 {
 	m_Bytes[0] = byte1;
 }
@@ -23,7 +25,8 @@ MidiEvent::MidiEvent (uint8_t byte1, bool valid) :
 MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, bool valid) :
 	IEvent( 0 ),
 	m_Bytes{ 0 },
-	m_Valid( valid )
+	m_Valid( valid ),
+	m_NumBytes( 2 )
 {
 	m_Bytes[0] = byte1;
 	m_Bytes[1] = byte2;
@@ -32,7 +35,8 @@ MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, bool valid) :
 MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3, bool valid) :
 	IEvent( 0 ),
 	m_Bytes{ 0 },
-	m_Valid( valid )
+	m_Valid( valid ),
+	m_NumBytes( 3 )
 {
 	m_Bytes[0] = byte1;
 	m_Bytes[1] = byte2;
@@ -42,7 +46,8 @@ MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3, bool valid) :
 MidiEvent::MidiEvent (unsigned int numBytes, uint8_t bytes...) :
 	IEvent( 0 ),
 	m_Bytes{ 0 },
-	m_Valid( true )
+	m_Valid( true ),
+	m_NumBytes( numBytes )
 {
 	va_list args;
 	va_start( args, bytes );
@@ -123,6 +128,16 @@ bool MidiEvent::isValid() const
 void MidiEvent::setValid (bool valid)
 {
 	m_Valid = valid;
+}
+
+unsigned int MidiEvent::getNumBytes() const
+{
+	return m_NumBytes;
+}
+
+void MidiEvent::setNumBytes (unsigned int numBytes)
+{
+	m_NumBytes = numBytes;
 }
 
 IMidiEventListener::~IMidiEventListener()

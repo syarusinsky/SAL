@@ -21,6 +21,15 @@ class MidiHandler
 
 		void dispatchEvents();
 
+		void setShouldPublishMidi (bool shouldPublish) { m_ShouldPublishMidi = shouldPublish; }
+		bool shouldPublishMidi() const { return m_ShouldPublishMidi; }
+		void setShouldPublishNoteOn (bool shouldPublish) { m_ShouldPublishNoteOn = shouldPublish; }
+		bool shouldPublishNoteOn() const { return m_ShouldPublishNoteOn; }
+		void setShouldPublishNoteOff (bool shouldPublish) { m_ShouldPublishNoteOff = shouldPublish; }
+		bool shouldPublishNoteOff() const { return m_ShouldPublishNoteOff; }
+		void setShouldPublishPitch (bool shouldPublish) { m_ShouldPublishPitch = shouldPublish; }
+		bool shouldPublishPitch() const { return m_ShouldPublishPitch; }
+
 		void setNumberOfSemitonesToPitchBend (unsigned int numSemitones);
 		unsigned int getNumberOfSemitonesToPitchBend();
 
@@ -31,6 +40,11 @@ class MidiHandler
 		unsigned int m_CurrentWriteIndex;
 		unsigned int m_CurrentReadIndex;
 		MidiEvent m_MsgBuffer[MIDI_BUFFER_SIZE];
+
+		bool 		m_ShouldPublishMidi;
+		bool 		m_ShouldPublishNoteOn;
+		bool 		m_ShouldPublishNoteOff;
+		bool 		m_ShouldPublishPitch;
 
 		unsigned int m_SemitonesToPitchBend;
 };
