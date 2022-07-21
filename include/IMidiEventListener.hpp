@@ -21,6 +21,8 @@ class MidiEvent : public IEvent
 		MidiEvent (unsigned int numBytes, uint8_t bytes...);
 		~MidiEvent();
 
+		void setChannel (unsigned int channel) override;
+
 		uint8_t* getRawData() const;
 
 		bool isNoteOn() const;

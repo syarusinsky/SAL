@@ -38,7 +38,7 @@ class IEvent
 		virtual ~IEvent() {}
 
 		unsigned int getChannel() const { return m_Channel; }
-		void setChannel (unsigned int channel) { m_Channel = channel; }
+		virtual void setChannel (unsigned int channel) { m_Channel = channel; }
 
 	protected:
 		unsigned int m_Channel;

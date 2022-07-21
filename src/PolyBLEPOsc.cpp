@@ -116,6 +116,7 @@ float PolyBLEPOsc::nextSample()
 
 void PolyBLEPOsc::setFrequency (float frequency)
 {
+	this->applyTriangleFilter();
 	m_Frequency = frequency;
 	m_PhaseIncr = (m_Frequency * 2.0f * M_PI) / SAMPLE_RATE;
 }
@@ -132,8 +133,6 @@ OscillatorMode PolyBLEPOsc::getOscillatorMode()
 
 void PolyBLEPOsc::call (float* writeBuffer)
 {
-	this->applyTriangleFilter();
-
 	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
 		writeBuffer[sample] = this->nextSample();

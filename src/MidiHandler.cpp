@@ -191,15 +191,15 @@ void MidiHandler::dispatchEvents()
 			// multiply by the number of semitones in bend range then divide by 12, then raise 2 to that power
 			float pitchBendFactor = powf( 2.0f, (pitchBendNormalized * static_cast<float>(m_SemitonesToPitchBend)) / 12.0f );
 
-			IPitchEventListener::PublishEvent( PitchEvent(pitchBendFactor) );
+			IPitchEventListener::PublishEvent( PitchEvent(pitchBendFactor, midiRawData[0] & 0b1111) );
 		}
 		else if ( m_ShouldPublishNoteOn && midiEvent.isNoteOn() )
 		{
-			IKeyEventListener::PublishEvent( KeyEvent(KeyPressedEnum::PRESSED, midiRawData[1], midiRawData[2]) );
+			IKeyEventListener::PublishEvent( KeyEvent(KeyPressedEnum::PRESSED, midiRawData[1], midiRawData[2], midiRawData[0] & 0b1111) );
 		}
 		else if ( m_ShouldPublishNoteOff && midiEvent.isNoteOff() )
 		{
-			IKeyEventListener::PublishEvent( KeyEvent(KeyPressedEnum::RELEASED, midiRawData[1], midiRawData[2]) );
+			IKeyEventListener::PublishEvent( KeyEvent(KeyPressedEnum::RELEASED, midiRawData[1], midiRawData[2], midiRawData[0] & 0b1111) );
 		}
 
 		// get next MIDI message in the queue and continue while loop

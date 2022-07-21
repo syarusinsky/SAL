@@ -65,6 +65,17 @@ MidiEvent::~MidiEvent()
 {
 }
 
+void MidiEvent::setChannel (unsigned int channel)
+{
+	m_Channel = channel;
+
+	if ( this->isNoteOn() || this->isNoteOff() || this->isPitchBend() || this->isPolyphonicAftertouch() || this->isControlChange() )
+	{
+		m_Bytes[0] &= 0b11110000;
+		m_Bytes[0] |= channel & 0b1111;
+	}
+}
+
 uint8_t* MidiEvent::getRawData() const
 {
 	return const_cast<uint8_t*>( m_Bytes );
