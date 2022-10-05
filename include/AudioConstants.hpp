@@ -10,14 +10,18 @@
 #define SAMPLE_RATE 40000
 #else
 #define SAMPLE_RATE 96000
-#endif
+#endif // TARGET_BUILD
 #define SAMPLE_PERIOD (1.0f / static_cast<float>(SAMPLE_RATE))
 #define NYQUIST_FREQ (SAMPLE_RATE / 2)
 #ifdef TARGET_BUILD
+#ifndef ABUFFER_SIZE
 #define ABUFFER_SIZE 256
+#endif // ABUFFER_SIZE
 #else
+#ifndef ABUFFER_SIZE
 #define ABUFFER_SIZE 512
-#endif
+#endif // ABUFFER_SIZE
+#endif // TARGET_BUILD
 
 // Musical Frequencies
 #define MUSIC_G9  12543.85

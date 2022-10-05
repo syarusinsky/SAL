@@ -14,7 +14,10 @@ def b12_compression (samples) :
     # convert each float sample into a 12-bit value and pack the data
     compressed_buf_index = 0
     bits_left_in_compress_buf_byte = 8
+    num_samples = len( samples )
+    sample_num = 0;
     for sample_val in samples :
+        sample_num = sample_num + 1;
         sample_val = math.floor( ((sample_val / 2) + 0.5) * 4095 )
 
         bits_left_in_value_to_write = 12
@@ -30,7 +33,8 @@ def b12_compression (samples) :
             if bits_left_in_compress_buf_byte == 0 :
                 compressed_buf_index += 1
                 bits_left_in_compress_buf_byte = 8
-                data_to_write.append( 0x00 )
+                if ( bits_left_in_value_to_write > 0 or sample_num < num_samples ) :
+                    data_to_write.append( 0x00 )
 
     return data_to_write
 
