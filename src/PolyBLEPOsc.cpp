@@ -144,3 +144,8 @@ void PolyBLEPOsc::applyTriangleFilter()
 	m_B1 = expf( -2.0f * M_PI * (std::abs(m_Frequency) / SAMPLE_RATE / 2.0f) ); // we need the abs value, since freq can be negative
 	m_A0 = 1.0f - m_B1;
 }
+
+void PolyBLEPOsc::resetPhase()
+{
+	m_Phase = 0.0f;
+}

@@ -19,6 +19,8 @@ class IOscillator
 
 		virtual void setOscillatorMode (const OscillatorMode& mode) = 0;
 		virtual OscillatorMode getOscillatorMode() = 0;
+
+		virtual void resetPhase() = 0;
 };
 
 #endif // IOSCILLATOR_HPP
