@@ -41,8 +41,8 @@ class AudioBuffer<T, false>
 		const std::set<IBufferCallback<T, false>*>& getCallbacks() const;
 		void registerCallback (IBufferCallback<T, false>* callback);
 	private:
-		T 		m_Buffer1[ABUFFER_SIZE];
-		T 		m_Buffer2[ABUFFER_SIZE];
+		T* 		m_Buffer1;
+		T* 		m_Buffer2;
 		T* 		m_CurrentBuffer;
 		unsigned int 	m_Pos;
 		std::set<IBufferCallback<T, false>*> m_Callbacks;
@@ -76,10 +76,10 @@ class AudioBuffer<T, true>
 		const std::set<IBufferCallback<T, true>*>& getCallbacks() const;
 		void registerCallback (IBufferCallback<T, true>* callback);
 	private:
-		T 		m_BufferL1[ABUFFER_SIZE];
-		T 		m_BufferL2[ABUFFER_SIZE];
-		T 		m_BufferR1[ABUFFER_SIZE];
-		T 		m_BufferR2[ABUFFER_SIZE];
+		T* 		m_BufferL1;
+		T* 		m_BufferL2;
+		T* 		m_BufferR1;
+		T* 		m_BufferR2;
 		T* 		m_CurrentBufferL;
 		T* 		m_CurrentBufferR;
 		unsigned int 	m_PosL;

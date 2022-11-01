@@ -4,19 +4,24 @@
 
 template <typename T>
 AudioBuffer<T, false>::AudioBuffer() :
-	m_Buffer1{ 0 },
-	m_Buffer2{ 0 },
+	m_Buffer1( new T[ABUFFER_SIZE] ),
+	m_Buffer2( new T[ABUFFER_SIZE] ),
 	m_CurrentBuffer( m_Buffer1 ),
 	m_Pos( 0 ),
 	m_Callbacks(),
 	m_NextReadBlockFilled( true )
 {
+	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
+	{
+		m_Buffer1[sample] = 0;
+		m_Buffer2[sample] = 0;
+	}
 }
 
 template <typename T>
 AudioBuffer<T, false>::AudioBuffer (const AudioBuffer& other) :
-	m_Buffer1{ 0 },
-	m_Buffer2{ 0 },
+	m_Buffer1( new T[ABUFFER_SIZE] ),
+	m_Buffer2( new T[ABUFFER_SIZE] ),
 	m_Callbacks()
 {
 	const T* const buffer1Other = other.getBuffer1();
@@ -34,6 +39,8 @@ AudioBuffer<T, false>::AudioBuffer (const AudioBuffer& other) :
 template <typename T>
 AudioBuffer<T, false>::~AudioBuffer()
 {
+	delete[] m_Buffer1;
+	delete[] m_Buffer2;
 }
 
 template <typename T>
@@ -138,10 +145,10 @@ T* AudioBuffer<T, false>::getBuffer (bool writeBuffer)
 
 template <typename T>
 AudioBuffer<T, true>::AudioBuffer() :
-	m_BufferL1{ 0 },
-	m_BufferL2{ 0 },
-	m_BufferR1{ 0 },
-	m_BufferR2{ 0 },
+	m_BufferL1( new T[ABUFFER_SIZE] ),
+	m_BufferL2( new T[ABUFFER_SIZE] ),
+	m_BufferR1( new T[ABUFFER_SIZE] ),
+	m_BufferR2( new T[ABUFFER_SIZE] ),
 	m_CurrentBufferL( m_BufferL1 ),
 	m_CurrentBufferR( m_BufferR1 ),
 	m_PosL( 0 ),
@@ -150,14 +157,21 @@ AudioBuffer<T, true>::AudioBuffer() :
 	m_NextReadBlockFilledL( true ),
 	m_NextReadBlockFilledR( true )
 {
+	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
+	{
+		m_BufferL1[sample] = 0;
+		m_BufferL2[sample] = 0;
+		m_BufferR1[sample] = 0;
+		m_BufferR2[sample] = 0;
+	}
 }
 
 template <typename T>
 AudioBuffer<T, true>::AudioBuffer (const AudioBuffer& other) :
-	m_BufferL1{ 0 },
-	m_BufferL2{ 0 },
-	m_BufferR1{ 0 },
-	m_BufferR2{ 0 },
+	m_BufferL1( new T[ABUFFER_SIZE] ),
+	m_BufferL2( new T[ABUFFER_SIZE] ),
+	m_BufferR1( new T[ABUFFER_SIZE] ),
+	m_BufferR2( new T[ABUFFER_SIZE] ),
 	m_Callbacks()
 {
 	const T* const bufferL1Other = other.getBufferL1();
@@ -183,6 +197,10 @@ AudioBuffer<T, true>::AudioBuffer (const AudioBuffer& other) :
 template <typename T>
 AudioBuffer<T, true>::~AudioBuffer()
 {
+	delete[] m_BufferL1;
+	delete[] m_BufferL2;
+	delete[] m_BufferR1;
+	delete[] m_BufferR2;
 }
 
 template <typename T>

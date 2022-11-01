@@ -33,14 +33,14 @@ void Limiter::call (float* writeBuffer)
 	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
 		// envelope follower
-		float absoluteSampleVal = std::fabs( writeBuffer[sample] );
+		const float absoluteSampleVal = std::fabs( writeBuffer[sample] );
 
 		m_Coefficient = ( absoluteSampleVal > m_Peak ) ? m_AttackCoeff : m_ReleaseCoeff;
 
 		m_Peak = ( (1.0f - m_Coefficient) * m_Peak ) + ( m_Coefficient * absoluteSampleVal );
 
 		// find gain to apply to signal
-		float filter = std::fmin( 1.0f, m_Threshold / m_Peak );
+		const float filter = std::fmin( 1.0f, m_Threshold / m_Peak );
 
 		m_Coefficient = ( filter < m_Gain ) ? m_AttackCoeff : m_ReleaseCoeff;
 
