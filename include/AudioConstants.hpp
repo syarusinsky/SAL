@@ -7,9 +7,13 @@
 *******************************************************/
 
 #ifdef TARGET_BUILD
+#ifndef SAMPLE_RATE
 #define SAMPLE_RATE 40000
+#endif
 #else
+#ifndef SAMPLE_RATE
 #define SAMPLE_RATE 96000
+#endif
 #endif // TARGET_BUILD
 #define SAMPLE_PERIOD (1.0f / static_cast<float>(SAMPLE_RATE))
 #define NYQUIST_FREQ (SAMPLE_RATE / 2)
