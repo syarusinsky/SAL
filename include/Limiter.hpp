@@ -11,13 +11,14 @@
 #include "AudioConstants.hpp"
 #include "IBufferCallback.hpp"
 
-class Limiter : public IBufferCallback<float>
+template <typename T>
+class Limiter : public IBufferCallback<T>
 {
 	public:
 		Limiter (float attackTimeMS, float releaseTimeMS, float peakThreshold, float makeupGain); // attack and release times in ms
 		~Limiter();
 
-		void call (float* writeBuffer) override;
+		void call (T* writeBuffer) override;
 
 	private:
 		float 		m_AttackTime;
@@ -32,7 +33,7 @@ class Limiter : public IBufferCallback<float>
 		float 		m_Gain;
 
 		unsigned int 	m_CircularBufferLength;
-		float* 		m_CircularBuffer;
+		T* 		m_CircularBuffer;
 		unsigned int 	m_WriteIndex;
 		unsigned int 	m_ReadIndex;
 };

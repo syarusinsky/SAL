@@ -2,7 +2,8 @@
 
 #include "Common.hpp"
 
-Limiter::Limiter (float attackTime, float releaseTime, float threshold, float makeupGain) :
+template <typename T>
+Limiter<T>::Limiter (float attackTime, float releaseTime, float threshold, float makeupGain) :
 	m_AttackTime( attackTime ),
 	m_AttackCoeff( getFilterCoeff(m_AttackTime) ),
 	m_ReleaseTime( releaseTime ),
@@ -13,22 +14,24 @@ Limiter::Limiter (float attackTime, float releaseTime, float threshold, float ma
 	m_Coefficient( 0.0f ),
 	m_Gain( 1.0f ),
 	m_CircularBufferLength( (SAMPLE_RATE / 1000) * m_AttackTime ),
-	m_CircularBuffer( new float[m_CircularBufferLength] ),
+	m_CircularBuffer( new T[m_CircularBufferLength] ),
 	m_WriteIndex( 0 ),
 	m_ReadIndex( 1 )
 {
 	for ( unsigned int sample = 0; sample < m_CircularBufferLength; sample++ )
 	{
-		m_CircularBuffer[sample] = 0.0f;
+		m_CircularBuffer[sample] = 0;
 	}
 }
 
-Limiter::~Limiter()
+template <typename T>
+Limiter<T>::~Limiter()
 {
 	delete[] m_CircularBuffer;
 }
 
-void Limiter::call (float* writeBuffer)
+template <typename T>
+void Limiter<T>::call (T* writeBuffer)
 {
 	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
@@ -54,3 +57,6 @@ void Limiter::call (float* writeBuffer)
 		m_WriteIndex = ( m_WriteIndex + 1 ) % m_CircularBufferLength;
 	}
 }
+
+template class Limiter<float>;
+template class Limiter<int16_t>;
