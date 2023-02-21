@@ -17,7 +17,19 @@ class AllpassCombFilter : public IBufferCallback<T>
 		AllpassCombFilter (unsigned int delayLength, float feedbackGain, T initVal = 0); // initVal is to initialize the delay buffer with
 		~AllpassCombFilter();
 
-		T processSample (T sampleVal);
+		inline T processSample (T sampleVal)
+		{
+			T delayedVal = m_DelayBuffer[m_DelayReadIncr];
+			T inputSum = ( sampleVal - (delayedVal * m_FeedbackGain) );
+			m_DelayBuffer[m_DelayWriteIncr] = inputSum;
+
+			T outVal = ( (inputSum * m_FeedbackGain) + delayedVal );
+
+			m_DelayWriteIncr = ( m_DelayWriteIncr + 1 ) % m_DelayLength;
+			m_DelayReadIncr = ( m_DelayReadIncr + 1 ) % m_DelayLength;
+
+			return outVal;
+		}
 
 		void setDelayLength (unsigned int delayLength); // must be less than or equal to initially defined delay length
 		void setFeedbackGain (float feedbackGain);
@@ -33,8 +45,6 @@ class AllpassCombFilter : public IBufferCallback<T>
 		unsigned int 	m_DelayReadIncr;
 
 		float 		m_FeedbackGain;
-
-		inline T processSampleHelper (T sampleVal);
 };
 
 #endif // ALLPASSCOMBFILTER_HPP

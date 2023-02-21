@@ -1,5 +1,7 @@
 #include "Limiter.hpp"
 
+#include <stdint.h>
+
 #include "Common.hpp"
 
 template <typename T>

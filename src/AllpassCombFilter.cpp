@@ -25,12 +25,6 @@ AllpassCombFilter<T>::~AllpassCombFilter()
 }
 
 template <typename T>
-T AllpassCombFilter<T>::processSample (T sampleVal)
-{
-	return processSampleHelper( sampleVal );
-}
-
-template <typename T>
 void AllpassCombFilter<T>::setDelayLength (unsigned int delayLength)
 {
 	m_DelayReadIncr = ( m_DelayWriteIncr + (m_DelayLength - delayLength) ) % m_DelayLength;
@@ -47,7 +41,7 @@ void AllpassCombFilter<T>::call (T* writeBuffer)
 {
 	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
-		writeBuffer[sample] = this->processSampleHelper( writeBuffer[sample] );
+		writeBuffer[sample] = this->processSample( writeBuffer[sample] );
 	}
 }
 
@@ -57,24 +51,9 @@ void AllpassCombFilter<T>::call (T* writeBuffer, unsigned int numModSamples, flo
 	unsigned int unmodulatedSamples = m_DelayLength - numModSamples;
 	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
-		writeBuffer[sample] = this->processSampleHelper( writeBuffer[sample] );
+		writeBuffer[sample] = this->processSample( writeBuffer[sample] );
 		this->setDelayLength( unmodulatedSamples + static_cast<unsigned int>(numModSamples * modSource[sample]) );
 	}
-}
-
-template <typename T>
-T AllpassCombFilter<T>::processSampleHelper (T sampleVal)
-{
-	T delayedVal = m_DelayBuffer[m_DelayReadIncr];
-	T inputSum = ( sampleVal - (delayedVal * m_FeedbackGain) );
-	m_DelayBuffer[m_DelayWriteIncr] = inputSum;
-
-	T outVal = ( (inputSum * m_FeedbackGain) + delayedVal );
-
-	m_DelayWriteIncr = ( m_DelayWriteIncr + 1 ) % m_DelayLength;
-	m_DelayReadIncr = ( m_DelayReadIncr + 1 ) % m_DelayLength;
-
-	return outVal;
 }
 
 // avoid linker errors
