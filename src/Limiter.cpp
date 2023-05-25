@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "Common.hpp"
+#include <cstdint>
 
 template <typename T>
 Limiter<T>::Limiter (float attackTime, float releaseTime, float threshold, float makeupGain) :
