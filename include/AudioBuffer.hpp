@@ -33,16 +33,20 @@ class AudioBuffer<T, false>
 		unsigned int getNumSamples() const;
 		T getNextSample (T sampleValToReadBuf = 0); 	// if we're also reading data (from ADC for example)
 								// we write those samples back into the 'read' buffer
+
+		void triggerCallbacksOnNextPoll (bool writeToBuffer1); // if not writing to buffer 1, writing to buffer 2
 		void pollToFillBuffers();
 
-		const T* const getBuffer1() const;
-		const T* const getBuffer2() const;
+		bool buffer1IsNextToWrite() const; // if buffer 1 is not next to write, buffer 2 is next to write
+
+		const T* getBuffer1() const;
+		const T* getBuffer2() const;
 
 		const std::set<IBufferCallback<T, false>*>& getCallbacks() const;
 		void registerCallback (IBufferCallback<T, false>* callback);
+
 	private:
-		T 		m_Buffer1[ABUFFER_SIZE];
-		T 		m_Buffer2[ABUFFER_SIZE];
+		T 		m_Buffers[ABUFFER_SIZE * 2];
 		T* 		m_CurrentBuffer;
 		unsigned int 	m_Pos;
 		std::set<IBufferCallback<T, false>*> m_Callbacks;
@@ -66,20 +70,22 @@ class AudioBuffer<T, true>
 		T getNextSampleL (T sampleValToReadBuf = 0);
 		T getNextSampleR (T sampleValToReadBuf = 0);
 
+		void triggerCallbacksOnNextPoll (bool writeToBuffer1);
 		void pollToFillBuffers();
 
-		const T* const getBufferL1() const;
-		const T* const getBufferL2() const;
-		const T* const getBufferR1() const;
-		const T* const getBufferR2() const;
+		bool buffer1IsNextToWrite() const;
+
+		const T* getBufferL1() const;
+		const T* getBufferL2() const;
+		const T* getBufferR1() const;
+		const T* getBufferR2() const;
 
 		const std::set<IBufferCallback<T, true>*>& getCallbacks() const;
 		void registerCallback (IBufferCallback<T, true>* callback);
+
 	private:
-		T 		m_BufferL1[ABUFFER_SIZE];
-		T 		m_BufferL2[ABUFFER_SIZE];
-		T 		m_BufferR1[ABUFFER_SIZE];
-		T 		m_BufferR2[ABUFFER_SIZE];
+		T 		m_BuffersL[ABUFFER_SIZE * 2];
+		T 		m_BuffersR[ABUFFER_SIZE * 2];
 		T* 		m_CurrentBufferL;
 		T* 		m_CurrentBufferR;
 		unsigned int 	m_PosL;

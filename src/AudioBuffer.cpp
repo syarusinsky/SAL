@@ -4,9 +4,8 @@
 
 template <typename T>
 AudioBuffer<T, false>::AudioBuffer() :
-	m_Buffer1{ 0 },
-	m_Buffer2{ 0 },
-	m_CurrentBuffer( m_Buffer1 ),
+	m_Buffers{ 0 },
+	m_CurrentBuffer( m_Buffers ),
 	m_Pos( 0 ),
 	m_Callbacks(),
 	m_NextReadBlockFilled( true )
@@ -15,17 +14,12 @@ AudioBuffer<T, false>::AudioBuffer() :
 
 template <typename T>
 AudioBuffer<T, false>::AudioBuffer (const AudioBuffer& other) :
-	m_Buffer1{ 0 },
-	m_Buffer2{ 0 },
+	m_Buffers{ 0 },
 	m_Callbacks()
 {
-	const T* const buffer1Other = other.getBuffer1();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_Buffer1[sample] = buffer1Other[sample];
-
-	const T* const buffer2Other = other.getBuffer2();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_Buffer2[sample] = buffer2Other[sample];
+	const T* bufferOther = other.getBuffer1();
+	for ( int sample = 0; sample < ABUFFER_SIZE * 2; sample++ )
+		m_Buffers[sample] = bufferOther[sample];
 
 	for ( IBufferCallback<T, false>* bC : other.getCallbacks() )
 		m_Callbacks.insert(bC);
@@ -39,13 +33,9 @@ AudioBuffer<T, false>::~AudioBuffer()
 template <typename T>
 AudioBuffer<T, false>& AudioBuffer<T, false>::operator= (const AudioBuffer& other)
 {
-	const T* const buffer1Other = other.getBuffer1();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_Buffer1[sample] = buffer1Other[sample];
-
-	const T* const buffer2Other = other.getBuffer2();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_Buffer2[sample] = buffer2Other[sample];
+	const T* bufferOther = other.getBuffer1();
+	for ( int sample = 0; sample < ABUFFER_SIZE * 2; sample++ )
+		m_Buffers[sample] = bufferOther[sample];
 
 	m_Callbacks.clear();
 	for ( IBufferCallback<T, false>* bC : other.getCallbacks() )
@@ -74,10 +64,17 @@ T AudioBuffer<T, false>::getNextSample (T sampleValToReadBuf)
 		m_Pos = 0;
 
 		m_NextReadBlockFilled = false;
-		m_CurrentBuffer = ( m_CurrentBuffer == m_Buffer1 ) ? m_Buffer2 : m_Buffer1;
+		m_CurrentBuffer = ( m_CurrentBuffer == m_Buffers ) ? &m_Buffers[ABUFFER_SIZE] : m_Buffers;
 	}
 
 	return retVal;
+}
+
+template <typename T>
+void AudioBuffer<T, false>::triggerCallbacksOnNextPoll (bool writeToBuffer1)
+{
+	m_CurrentBuffer = ( writeToBuffer1 ) ? m_Buffers : &m_Buffers[ABUFFER_SIZE];
+	m_NextReadBlockFilled = false;
 }
 
 template <typename T>
@@ -85,7 +82,7 @@ void AudioBuffer<T, false>::pollToFillBuffers()
 {
 	if ( ! m_NextReadBlockFilled )
 	{
-		T* nextBuffer = ( m_CurrentBuffer == m_Buffer1 ) ? m_Buffer2 : m_Buffer1;
+		T* nextBuffer = ( m_CurrentBuffer == m_Buffers ) ? &m_Buffers[ABUFFER_SIZE] : m_Buffers;
 
 		for ( IBufferCallback<T, false>* callback : m_Callbacks )
 		{
@@ -97,15 +94,21 @@ void AudioBuffer<T, false>::pollToFillBuffers()
 }
 
 template <typename T>
-const T* const AudioBuffer<T, false>::getBuffer1() const
+bool AudioBuffer<T, false>::buffer1IsNextToWrite() const
 {
-	return m_Buffer1;
+	return m_Buffers != m_CurrentBuffer;
 }
 
 template <typename T>
-const T* const AudioBuffer<T, false>::getBuffer2() const
+const T* AudioBuffer<T, false>::getBuffer1() const
 {
-	return m_Buffer2;
+	return m_Buffers;
+}
+
+template <typename T>
+const T* AudioBuffer<T, false>::getBuffer2() const
+{
+	return &m_Buffers[ABUFFER_SIZE];
 }
 
 template <typename T>
@@ -128,22 +131,20 @@ T* AudioBuffer<T, false>::getBuffer (bool writeBuffer)
 {
 	if ( writeBuffer )
 	{
-		return m_Buffer2;
+		return &m_Buffers[ABUFFER_SIZE];
 	}
 	else
 	{
-		return m_Buffer1;
+		return m_Buffers;
 	}
 }
 
 template <typename T>
 AudioBuffer<T, true>::AudioBuffer() :
-	m_BufferL1{ 0 },
-	m_BufferL2{ 0 },
-	m_BufferR1{ 0 },
-	m_BufferR2{ 0 },
-	m_CurrentBufferL( m_BufferL1 ),
-	m_CurrentBufferR( m_BufferR1 ),
+	m_BuffersL{ 0 },
+	m_BuffersR{ 0 },
+	m_CurrentBufferL( m_BuffersL ),
+	m_CurrentBufferR( m_BuffersR ),
 	m_PosL( 0 ),
 	m_PosR( 0 ),
 	m_Callbacks(),
@@ -154,27 +155,17 @@ AudioBuffer<T, true>::AudioBuffer() :
 
 template <typename T>
 AudioBuffer<T, true>::AudioBuffer (const AudioBuffer& other) :
-	m_BufferL1{ 0 },
-	m_BufferL2{ 0 },
-	m_BufferR1{ 0 },
-	m_BufferR2{ 0 },
+	m_BuffersL{ 0 },
+	m_BuffersR{ 0 },
 	m_Callbacks()
 {
-	const T* const bufferL1Other = other.getBufferL1();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_BufferL1[sample] = bufferL1Other[sample];
+	const T* buffersLOther = other.getBufferL1();
+	for ( int sample = 0; sample < ABUFFER_SIZE * 2; sample++ )
+		m_BuffersL[sample] = buffersLOther[sample];
 
-	const T* const bufferL2Other = other.getBufferL2();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_BufferL2[sample] = bufferL2Other[sample];
-
-	const T* const bufferR1Other = other.getBufferR1();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_BufferR1[sample] = bufferR1Other[sample];
-
-	const T* const bufferR2Other = other.getBufferR2();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_BufferR2[sample] = bufferR2Other[sample];
+	const T* buffersROther = other.getBufferR1();
+	for ( int sample = 0; sample < ABUFFER_SIZE * 2; sample++ )
+		m_BuffersR[sample] = buffersROther[sample];
 
 	for ( IBufferCallback<T, false>* bC : other.getCallbacks() )
 		m_Callbacks.insert(bC);
@@ -188,21 +179,13 @@ AudioBuffer<T, true>::~AudioBuffer()
 template <typename T>
 AudioBuffer<T, true>& AudioBuffer<T, true>::operator= (const AudioBuffer& other)
 {
-	const T* const bufferL1Other = other.getBufferL1();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_BufferL1[sample] = bufferL1Other[sample];
+	const T* buffersLOther = other.getBufferL1();
+	for ( int sample = 0; sample < ABUFFER_SIZE * 2; sample++ )
+		m_BuffersL[sample] = buffersLOther[sample];
 
-	const T* const bufferL2Other = other.getBufferL2();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_BufferL2[sample] = bufferL2Other[sample];
-
-	const T* const bufferR1Other = other.getBufferR1();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_BufferR1[sample] = bufferR1Other[sample];
-
-	const T* const bufferR2Other = other.getBufferR2();
-	for ( int sample = 0; sample < ABUFFER_SIZE; sample++ )
-		m_BufferR2[sample] = bufferR2Other[sample];
+	const T* buffersROther = other.getBufferR1();
+	for ( int sample = 0; sample < ABUFFER_SIZE * 2; sample++ )
+		m_BuffersR[sample] = buffersROther[sample];
 
 	m_Callbacks.clear();
 	for ( IBufferCallback<T, false>* bC : other.getCallbacks() )
@@ -231,7 +214,7 @@ T AudioBuffer<T, true>::getNextSampleL (T sampleValToReadBuf)
 		m_PosL = 0;
 
 		m_NextReadBlockFilledL = false;
-		m_CurrentBufferL = ( m_CurrentBufferL == m_BufferL1 ) ? m_BufferL2 : m_BufferL1;
+		m_CurrentBufferL = ( m_CurrentBufferL == m_BuffersL ) ? &m_BuffersL[ABUFFER_SIZE] : m_BuffersL;
 	}
 
 	return retVal;
@@ -250,10 +233,19 @@ T AudioBuffer<T, true>::getNextSampleR (T sampleValToReadBuf)
 		m_PosR = 0;
 
 		m_NextReadBlockFilledR = false;
-		m_CurrentBufferR = ( m_CurrentBufferR == m_BufferR1 ) ? m_BufferR2 : m_BufferR1;
+		m_CurrentBufferR = ( m_CurrentBufferR == m_BuffersR ) ? &m_BuffersR[ABUFFER_SIZE] : m_BuffersR;
 	}
 
 	return retVal;
+}
+
+template <typename T>
+void AudioBuffer<T, true>::triggerCallbacksOnNextPoll (bool writeToBuffer1)
+{
+	m_CurrentBufferL = ( writeToBuffer1 ) ? m_BuffersL : &m_BuffersL[ABUFFER_SIZE];
+	m_CurrentBufferR = ( writeToBuffer1 ) ? m_BuffersR : &m_BuffersR[ABUFFER_SIZE];
+	m_NextReadBlockFilledL = false;
+	m_NextReadBlockFilledR = false;
 }
 
 template <typename T>
@@ -261,8 +253,8 @@ void AudioBuffer<T, true>::pollToFillBuffers()
 {
 	if ( ! m_NextReadBlockFilledL && ! m_NextReadBlockFilledR )
 	{
-		T* nextBufferL = ( m_CurrentBufferL == m_BufferL1 ) ? m_BufferL2 : m_BufferL1;
-		T* nextBufferR = ( m_CurrentBufferR == m_BufferR1 ) ? m_BufferR2 : m_BufferR1;
+		T* nextBufferL = ( m_CurrentBufferL == m_BuffersL ) ? &m_BuffersL[ABUFFER_SIZE] : m_BuffersL;
+		T* nextBufferR = ( m_CurrentBufferR == m_BuffersR ) ? &m_BuffersR[ABUFFER_SIZE] : m_BuffersR;
 
 		for ( IBufferCallback<T, true>* callback : m_Callbacks )
 		{
@@ -275,27 +267,33 @@ void AudioBuffer<T, true>::pollToFillBuffers()
 }
 
 template <typename T>
-const T* const AudioBuffer<T, true>::getBufferL1() const
+bool AudioBuffer<T, true>::buffer1IsNextToWrite() const
 {
-	return m_BufferL1;
+	return ( m_BuffersL != m_CurrentBufferL && m_BuffersR != m_CurrentBufferR );
 }
 
 template <typename T>
-const T* const AudioBuffer<T, true>::getBufferL2() const
+const T* AudioBuffer<T, true>::getBufferL1() const
 {
-	return m_BufferL2;
+	return m_BuffersL;
 }
 
 template <typename T>
-const T* const AudioBuffer<T, true>::getBufferR1() const
+const T* AudioBuffer<T, true>::getBufferL2() const
 {
-	return m_BufferR1;
+	return &m_BuffersL[ABUFFER_SIZE];
 }
 
 template <typename T>
-const T* const AudioBuffer<T, true>::getBufferR2() const
+const T* AudioBuffer<T, true>::getBufferR1() const
 {
-	return m_BufferR2;
+	return m_BuffersR;
+}
+
+template <typename T>
+const T* AudioBuffer<T, true>::getBufferR2() const
+{
+	return &m_BuffersR[ABUFFER_SIZE];
 }
 
 template <typename T>
@@ -318,11 +316,11 @@ T* AudioBuffer<T, true>::getBufferL (bool writeBuffer)
 {
 	if ( writeBuffer )
 	{
-		return m_BufferL2;
+		return &m_BuffersL[ABUFFER_SIZE];
 	}
 	else
 	{
-		return m_BufferL1;
+		return m_BuffersL;
 	}
 }
 
@@ -331,11 +329,11 @@ T* AudioBuffer<T, true>::getBufferR (bool writeBuffer)
 {
 	if ( writeBuffer )
 	{
-		return m_BufferR2;
+		return &m_BuffersR[ABUFFER_SIZE];
 	}
 	else
 	{
-		return m_BufferR1;
+		return m_BuffersR;
 	}
 }
 
