@@ -3,8 +3,8 @@
 #include "AudioConstants.hpp"
 
 
-template <typename T>
-void SoftClipper<T>::call (T* writeBuffer)
+template <typename T, bool use12Bit>
+void SoftClipper<T, use12Bit>::call (T* writeBuffer)
 {
 	for ( unsigned int sample = 0; sample < ABUFFER_SIZE; sample++ )
 	{
