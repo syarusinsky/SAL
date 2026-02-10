@@ -11,10 +11,11 @@ AntiAliasingFilter<T>::AntiAliasingFilter (const float cutoffFreq, const unsigne
 	m_FilterOrder( filterOrder ),
 	m_Coefficients( calculateCoefficients() ),
 	m_BufferSize( bufferSize ),
-	m_WorkingBuffer( m_BufferSize )
+	m_WorkingBuffer( filterOrder ),
+	m_WorkingBufferIncr( 0 )
 {
 	// fill working buffer with zero-values
-	for ( unsigned int sample = 0; sample < m_BufferSize; sample++ )
+	for ( unsigned int sample = 0; sample < m_FilterOrder; sample++ )
 	{
 		m_WorkingBuffer[sample] = static_cast<float>( getZeroPoint() );
 	}
@@ -26,18 +27,20 @@ void AntiAliasingFilter<T>::call (T* const buffer)
 	for ( unsigned int sample = 0; sample < m_BufferSize; sample++ )
 	{
 		// first put the input value in the working buffer (circular buffer)
-		unsigned int workingBufferSample = sample + m_FilterOrder - 1;
-		m_WorkingBuffer[workingBufferSample % m_BufferSize] = static_cast<float>( buffer[sample] );
+		m_WorkingBuffer[m_WorkingBufferIncr] = static_cast<float>( buffer[sample] );
 
 		// apply filter using convolution
 		float output = static_cast<float>( getZeroPoint() );
 		for ( unsigned int coeffNum = 0; coeffNum < m_FilterOrder; coeffNum++)
 		{
-			unsigned int index = workingBufferSample - coeffNum;
-			output += m_WorkingBuffer[index % m_BufferSize] * m_Coefficients[coeffNum];
+			// the index moves backwords (convolution)
+			unsigned int index = ( (m_WorkingBufferIncr + m_FilterOrder) - coeffNum ) % m_FilterOrder;
+
+			output += m_WorkingBuffer[index] * m_Coefficients[coeffNum];
 		}
 
 		buffer[sample] = static_cast<T>( output );
+		m_WorkingBufferIncr = ( m_WorkingBufferIncr + 1 ) % m_FilterOrder;
 	}
 }
 
@@ -55,12 +58,13 @@ void AntiAliasingFilter<T>::changeValues (const float cutoffFreq, const unsigned
 	m_FilterOrder = filterOrder;
 	m_Coefficients = calculateCoefficients();
 	m_BufferSize = bufferSize;
-	std::vector<float> newWorkingBuffer( m_BufferSize );
+	std::vector<float> newWorkingBuffer( filterOrder );
 	m_WorkingBuffer = newWorkingBuffer;
+	m_WorkingBufferIncr = 0;
 
 	// TODO don't want to do this when implementing the realtime version described in the above todo note
 	// fill working buffer with zero-values
-	for ( unsigned int sample = 0; sample < m_BufferSize; sample++ )
+	for ( unsigned int sample = 0; sample < filterOrder; sample++ )
 	{
 		m_WorkingBuffer[sample] = static_cast<float>( getZeroPoint() );
 	}

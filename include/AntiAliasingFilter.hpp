@@ -33,6 +33,7 @@ class AntiAliasingFilter
 		std::vector<float> 	m_Coefficients;
 		unsigned int 		m_BufferSize;
 		std::vector<float> 	m_WorkingBuffer; 	// this is a circular buffer that the input buffer of call is copied into
+		unsigned int 		m_WorkingBufferIncr;
 
 		std::vector<float> calculateCoefficients();
 
