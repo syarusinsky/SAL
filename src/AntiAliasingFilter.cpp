@@ -4,13 +4,11 @@
 #include <cmath>
 
 template <typename T>
-AntiAliasingFilter<T>::AntiAliasingFilter (const float cutoffFreq, const unsigned int sampleRate, const unsigned int filterOrder,
-						const unsigned int bufferSize) :
+AntiAliasingFilter<T>::AntiAliasingFilter (const float cutoffFreq, const unsigned int sampleRate, const unsigned int filterOrder) :
 	m_CutoffFreq( cutoffFreq ),
 	m_SampleRate( sampleRate ),
 	m_FilterOrder( filterOrder ),
 	m_Coefficients( calculateCoefficients() ),
-	m_BufferSize( bufferSize ),
 	m_WorkingBuffer( filterOrder ),
 	m_WorkingBufferIncr( 0 )
 {
@@ -22,9 +20,9 @@ AntiAliasingFilter<T>::AntiAliasingFilter (const float cutoffFreq, const unsigne
 }
 
 template <typename T>
-void AntiAliasingFilter<T>::call (T* const buffer)
+void AntiAliasingFilter<T>::call (T* const buffer, const unsigned int bufferSize)
 {
-	for ( unsigned int sample = 0; sample < m_BufferSize; sample++ )
+	for ( unsigned int sample = 0; sample < bufferSize; sample++ )
 	{
 		// first put the input value in the working buffer (circular buffer)
 		m_WorkingBuffer[m_WorkingBufferIncr] = static_cast<float>( buffer[sample] );
@@ -45,8 +43,7 @@ void AntiAliasingFilter<T>::call (T* const buffer)
 }
 
 template <typename T>
-void AntiAliasingFilter<T>::changeValues (const float cutoffFreq, const unsigned int sampleRate, const unsigned int filterOrder,
-						const unsigned int bufferSize)
+void AntiAliasingFilter<T>::changeValues (const float cutoffFreq, const unsigned int sampleRate, const unsigned int filterOrder)
 {
 	// TODO this might cause crackling as is, which is fine for my current use-case, but for a realtime sample rate/bit crusher
 	// effect it would not. If I decide to create something like that in the future, the old working buffer values will need
@@ -57,7 +54,6 @@ void AntiAliasingFilter<T>::changeValues (const float cutoffFreq, const unsigned
 	m_SampleRate = sampleRate;
 	m_FilterOrder = filterOrder;
 	m_Coefficients = calculateCoefficients();
-	m_BufferSize = bufferSize;
 	std::vector<float> newWorkingBuffer( filterOrder );
 	m_WorkingBuffer = newWorkingBuffer;
 	m_WorkingBufferIncr = 0;
@@ -106,9 +102,19 @@ std::vector<float> AntiAliasingFilter<T>::calculateCoefficients()
 	{
 		sum += filterCoeffs[filterCoeff];
 	}
-	for ( unsigned int filterCoeff = 0; filterCoeff < m_FilterOrder; filterCoeff++ )
+	while ( sum > 1.0f ) // we want there to be unity gain, or slight attentuation
 	{
-		filterCoeffs[filterCoeff] /= sum;
+		for ( unsigned int filterCoeff = 0; filterCoeff < m_FilterOrder; filterCoeff++ )
+		{
+			filterCoeffs[filterCoeff] /= sum;
+		}
+		sum = 0.0f;
+		for ( unsigned int filterCoeff = 0; filterCoeff < m_FilterOrder; filterCoeff++ )
+		{
+			sum += filterCoeffs[filterCoeff];
+		}
+
+		m_FilterOrder = m_FilterOrder % 41324234;
 	}
 
 	return filterCoeffs;

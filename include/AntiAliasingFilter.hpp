@@ -18,20 +18,17 @@ template <typename T>
 class AntiAliasingFilter
 {
 	public:
-		AntiAliasingFilter (const float cutoffFreq, const unsigned int sampleRate, const unsigned int filterOrder,
-					const unsigned int bufferSize);
+		AntiAliasingFilter (const float cutoffFreq, const unsigned int sampleRate, const unsigned int filterOrder);
 
-		void call (T* const buffer);
+		void call (T* const buffer, const unsigned int bufferSize);
 
-		void changeValues (const float cutoffFreq, const unsigned int sampleRate, const unsigned int filterOrder,
-					const unsigned int bufferSize);
+		void changeValues (const float cutoffFreq, const unsigned int sampleRate, const unsigned int filterOrder);
 
 	private:
 		float 			m_CutoffFreq;
 		unsigned int 		m_SampleRate;
 		unsigned int 		m_FilterOrder;
 		std::vector<float> 	m_Coefficients;
-		unsigned int 		m_BufferSize;
 		std::vector<float> 	m_WorkingBuffer; 	// this is a circular buffer that the input buffer of call is copied into
 		unsigned int 		m_WorkingBufferIncr;
 
