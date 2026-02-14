@@ -37,14 +37,6 @@ class SampleRateConverter
 		void setSourceBufferSize (const unsigned int sourceBufferSize);
 		void resetAAFilters();
 
-		void resetAllIncrs()
-		{
-			m_SourceToTargetSourceIncr = 0.0f;
-			m_SourceToTargetTargetIncr = 0.0f;
-			m_TargetToSourceTargetIncr = 0.0f;
-			m_TargetToSourceSourceIncr = 0.0f;
-		}
-
 		float getSourceToTargetSourceIncr() const { return m_SourceToTargetSourceIncr; }
 		unsigned int getSourceToTargetTargetIncr() const { return m_SourceToTargetTargetIncr; }
 		float getTargetToSourceTargetIncr() const { return m_TargetToSourceTargetIncr; }
@@ -53,7 +45,8 @@ class SampleRateConverter
 		unsigned int getSourceRate() const { return m_SourceRate; }
 		unsigned int getTargetRate() const { return m_TargetRate; }
 		unsigned int getSourceBufferSize() const { return m_SourceBufferSize; }
-		float getTargetBufferSize() const { return m_TargetBufferSize; }
+		float getFractionalTargetBufferSize() const { return m_TargetBufferSize; }
+		float getCurrentTargetBufferSize() const { return m_WorkingTargetBufferSize; } // returns the true "working" target buffer size
 
 		bool sourceToTargetIsUpsampling() const { return ( m_SourceRate < m_TargetRate ) ? true : false; }
 		bool targetToSourceIsUpsampling() const { return ( m_TargetRate < m_SourceRate ) ? true : false; }
@@ -68,6 +61,7 @@ class SampleRateConverter
 		float 		m_TargetToSourceTargetIncr; // fractional sample number of current target buffer during resampling
 		float 	 	m_TargetToSourceSourceIncr; // fractional sample number of current source buffer sample during resampling
 		float 		m_SourceToTargetPhaseAccumulation; // for calculating fixed size buffers with fractional target buffer sizes
+		bool 		m_PhaseAccumulated; // true once full fractional target buffer size cycle is complete
 
 		TType 		m_WorkingTargetBufferLastSample;
 		SType 		m_WorkingSourceBufferLastSample;
