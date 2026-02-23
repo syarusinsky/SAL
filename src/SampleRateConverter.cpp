@@ -14,14 +14,9 @@ SampleRateConverter<SType, TType>::SampleRateConverter (const unsigned int initi
 	m_SourceToTargetTargetIncr( 0.0f ),
 	m_TargetToSourceTargetIncr( -1.0f ), // since we begin delayed by one target sample
 	m_TargetToSourceSourceIncr( 0.0f ),
-	m_SourceToTargetPhaseAccumulation( 0.0f ),
-	m_PhaseAccumulated( false ),
 	m_TargetToSourceEmittedSamples(),
 	m_WorkingTargetBufferLastSample( getTargetZeroPoint() ),
-	m_UseWorkingTargetBufferLastSample( false ),
 	m_WorkingSourceBufferLastSample( getSourceZeroPoint() ),
-	m_WorkingSourceBufferCurrentSample( getSourceZeroPoint() ),
-	m_WorkingTargetBufferSize( m_TargetBufferSize ),
 	m_SourceToTargetDownsamplingAAFilter(
 			// cutoff
 			m_TargetRate / 2,
@@ -57,102 +52,6 @@ SampleRateConverter<SType, TType>::SampleRateConverter (const unsigned int initi
 		const float sourceSamplesPerTargetSample = static_cast<float>( m_SourceRate ) / static_cast<float>( m_TargetRate );
 		m_TargetToSourceSourceIncr = sourceSamplesPerTargetSample;
 	}
-}
-
-template <typename SType, typename TType>
-bool SampleRateConverter<SType, TType>::convertFromSourceToTarget (const SType* const sourceBuffer, TType* const targetBuffer)
-{
-	/*
-	m_PhaseAccumulated = false;
-
-	const float targetSamplesPerSourceSample = static_cast<float>( m_TargetRate ) / static_cast<float>( m_SourceRate );
-
-	// to keep sampling consistent, we need the modulo value for the next source buffer
-	m_SourceToTargetTargetIncr = std::fmod( m_SourceToTargetTargetIncr, m_WorkingTargetBufferSize );
-	const float targetBufferSizeFraction = std::fmod( m_TargetBufferSize, std::floor(m_TargetBufferSize) );
-	const bool fractionalTargetBufferIsLarger = targetBufferSizeFraction < 0.5f;
-	m_SourceToTargetPhaseAccumulation += targetBufferSizeFraction;
-	m_SourceToTargetSourceIncr = 0.0f;
-
-	// if target buffer is fractional, we alternate target buffer sizes between the fraction
-	const float phaseAccumulationModulo = std::fmod( m_SourceToTargetPhaseAccumulation, 1.0f );
-	const bool needToUseFractionalTargetBufferSize = ( phaseAccumulationModulo + targetBufferSizeFraction ) >= 1.0f;
-	m_WorkingTargetBufferSize = m_TargetBufferSize;
-	if ( needToUseFractionalTargetBufferSize )
-	{
-		m_WorkingTargetBufferSize = (fractionalTargetBufferIsLarger) ? m_TargetBufferSize + 1.0f : m_TargetBufferSize - 1.0f;
-	}
-	m_WorkingTargetBufferSize = std::floor( m_WorkingTargetBufferSize );
-
-	// zero out target buffer (zero-stuffing if necessary)
-	for ( float sample = 0; sample < m_WorkingTargetBufferSize; sample += 1.0f )
-	{
-		targetBuffer[static_cast<unsigned int>(sample)] = getTargetZeroPoint();
-	}
-
-	// we may need to carry over the last source buffer's sample if the target buffer size is fractional
-	// if ( (needToUseFractionalTargetBufferSize && fractionalTargetBufferIsLarger)
-	// 	|| (! needToUseFractionalTargetBufferSize && ! fractionalTargetBufferIsLarger) )
-	// {
-	// 	// linearly interpolate
-	// 	const float fraction = std::fmod( m_SourceToTargetTargetIncr, 1.0f );
-	// 	const float lowerAmt = 1.0f - fraction;
-	// 	const float upperAmt = 1.0f - lowerAmt;
-	// 	const float lowerSourceBufferVal = m_WorkingSourceBufferLastSample;
-	// 	const float upperSourceBufferVal = sourceBuffer[ static_cast<unsigned int>(m_SourceToTargetSourceIncr + 1.0f) ];
-	// 	const float lowerVal = lowerAmt * lowerSourceBufferVal;
-	// 	const float upperVal = upperAmt * upperSourceBufferVal;
-	// 	const float sampleVal = lowerVal + upperVal;
-	// 	targetBuffer[ static_cast<unsigned int>(m_SourceToTargetTargetIncr) ] = convertSourceToTargetType( sampleVal );
-
-	// 	m_SourceToTargetTargetIncr += targetSamplesPerSourceSample;
-	// }
-
-	for ( float& sample = m_SourceToTargetTargetIncr;
-			sample < m_WorkingTargetBufferSize;
-			sample += targetSamplesPerSourceSample )
-	{
-		// linearly interpolate
-		const float fraction = std::fmod( m_SourceToTargetTargetIncr, 1.0f );
-		const float upperAmt = 1.0f - fraction;
-		const float lowerAmt = 1.0f - upperAmt;
-		const float lowerSourceBufferVal = m_WorkingSourceBufferLastSample;
-		const float upperSourceBufferVal = sourceBuffer[ static_cast<unsigned int>(m_SourceToTargetSourceIncr) ];
-		const float lowerVal = lowerAmt * lowerSourceBufferVal;
-		const float upperVal = upperAmt * upperSourceBufferVal;
-		const float sampleVal = lowerVal + upperVal;
-		targetBuffer[ static_cast<unsigned int>(m_SourceToTargetTargetIncr) ] = convertSourceToTargetType( sampleVal );
-
-		m_WorkingSourceBufferLastSample = sourceBuffer[ static_cast<unsigned int>(m_SourceToTargetSourceIncr) ];
-		m_SourceToTargetSourceIncr += 1.0f;
-
-		// we may need to increment more if downsampling
-		const float nextIntegerSample = std::floor(sample) + 1.0f;
-		while ( std::floor(sample + targetSamplesPerSourceSample) < nextIntegerSample )
-		{
-			sample += targetSamplesPerSourceSample;
-			m_WorkingSourceBufferLastSample = sourceBuffer[ static_cast<unsigned int>(m_SourceToTargetSourceIncr) ];
-			m_SourceToTargetSourceIncr += 1.0f;
-		}
-	}
-
-	// after a full fractional cycle, reset incrs to prevent floating point accumulation errors
-	const float fullCycleVal = targetBufferSizeFraction
-					* ( (fractionalTargetBufferIsLarger)
-						? (1.0f / targetBufferSizeFraction)
-						: (1.0f / (1.0f - targetBufferSizeFraction)) );
-	// + targetBufferSizeFraction to account for floating point accumulation errors
-	if ( m_SourceToTargetPhaseAccumulation + targetBufferSizeFraction >= fullCycleVal )
-	{
-		m_SourceToTargetTargetIncr = 0.0f;
-		m_SourceToTargetPhaseAccumulation = 0.0f;
-
-		// also prevent accumulation errors for target-to-source conversion
-		m_PhaseAccumulated = true;
-	}
-	*/
-
-	return true;
 }
 
 template <typename SType, typename TType>
@@ -308,54 +207,6 @@ unsigned int SampleRateConverter<SType, TType>::convertFromTargetToSourceUpsampl
 }
 
 template <typename SType, typename TType>
-bool SampleRateConverter<SType, TType>::convertFromTargetToSource (const TType* const targetBuffer, SType* const sourceBuffer)
-{
-	/*
-	const float sourceSamplesPerTargetSample = static_cast<float>( m_SourceRate ) / static_cast<float>( m_TargetRate );
-
-	// to keep sampling consistent, we need the modulo value for the next source buffer
-	m_TargetToSourceSourceIncr = std::fmod( m_TargetToSourceSourceIncr, static_cast<float>(m_SourceBufferSize) );
-	m_TargetToSourceTargetIncr = 0;
-
-	// zero out source buffer from m_TargetToSourceSourceIncr to m_SourceBufferSize (zero-stuffing if necessary)
-	for ( unsigned int sample = 0; sample < m_SourceBufferSize; sample++ )
-	{
-		sourceBuffer[sample] = getSourceZeroPoint();
-	}
-
-	// we may need to carry over the last target buffer sample if target buffer size is fractional
-	if ( m_UseWorkingTargetBufferLastSample )
-	{
-		sourceBuffer[ static_cast<unsigned int>(m_TargetToSourceSourceIncr) ]
-			= convertTargetToSourceType( m_WorkingTargetBufferLastSample );
-		m_UseWorkingTargetBufferLastSample = false;
-		m_TargetToSourceSourceIncr += sourceSamplesPerTargetSample;
-	}
-
-	for ( float& sample = m_TargetToSourceSourceIncr;
-			sample < m_SourceBufferSize;
-			sample += sourceSamplesPerTargetSample )
-	{
-		sourceBuffer[ static_cast<unsigned int>(sample) ]
-			= convertTargetToSourceType( targetBuffer[static_cast<unsigned int>(m_TargetToSourceTargetIncr)] );
-
-		m_TargetToSourceTargetIncr += 1.0f;
-	}
-
-	m_WorkingTargetBufferLastSample = targetBuffer[ static_cast<unsigned int>(m_TargetToSourceTargetIncr) ];
-
-	// prevent floating point accumulation errors
-	if ( m_PhaseAccumulated )
-	{
-		m_TargetToSourceSourceIncr = 0.0f;
-		m_UseWorkingTargetBufferLastSample = true;
-	}
-	*/
-
-	return true;
-}
-
-template <typename SType, typename TType>
 void SampleRateConverter<SType, TType>::filterSourceToTargetDownsampling (SType* const buffer)
 {
 	m_SourceToTargetDownsamplingAAFilter.call( buffer, m_SourceBufferSize );
@@ -387,12 +238,9 @@ void SampleRateConverter<SType, TType>::setSourceRate (const unsigned int source
 	m_TargetBufferSize = getTargetBufferSizePerSourceBuffer();
 	m_WorkingTargetBufferLastSample = getTargetZeroPoint();
 	m_WorkingSourceBufferLastSample = getSourceZeroPoint();
-	m_WorkingTargetBufferSize = m_TargetBufferSize;
 	m_SourceToTargetTargetIncr = 0.0f;
 	m_SourceToTargetSourceIncr = 0.0f;
 	m_TargetToSourceTargetIncr = -1.0f; // since we begin delayed by one target sample
-	m_SourceToTargetPhaseAccumulation = 0.0f;
-	m_PhaseAccumulated = false;
 
 	m_TargetToSourceSourceIncr = 0.0f;
 	// if downsampling from source to target, we'll be on the tail end of each "sample", so we set the source incr to be too
@@ -413,12 +261,9 @@ void SampleRateConverter<SType, TType>::setTargetRate (const unsigned int target
 	m_TargetBufferSize = getTargetBufferSizePerSourceBuffer();
 	m_WorkingTargetBufferLastSample = getTargetZeroPoint();
 	m_WorkingSourceBufferLastSample = getSourceZeroPoint();
-	m_WorkingTargetBufferSize = m_TargetBufferSize;
 	m_SourceToTargetTargetIncr = 0.0f;
 	m_SourceToTargetSourceIncr = 0.0f;
 	m_TargetToSourceTargetIncr = -1.0f; // since we begin delayed by one target sample
-	m_SourceToTargetPhaseAccumulation = 0.0f;
-	m_PhaseAccumulated = false;
 
 	m_TargetToSourceSourceIncr = 0.0f;
 	// if downsampling from source to target, we'll be on the tail end of each "sample", so we set the source incr to be too
@@ -439,12 +284,9 @@ void SampleRateConverter<SType, TType>::setSourceBufferSize (const unsigned int 
 	m_TargetBufferSize = getTargetBufferSizePerSourceBuffer();
 	m_WorkingTargetBufferLastSample = getTargetZeroPoint();
 	m_WorkingSourceBufferLastSample = getSourceZeroPoint();
-	m_WorkingTargetBufferSize = m_TargetBufferSize;
 	m_SourceToTargetTargetIncr = 0.0f;
 	m_SourceToTargetSourceIncr = 0.0f;
 	m_TargetToSourceTargetIncr = -1.0f; // since we begin delayed by one target sample
-	m_SourceToTargetPhaseAccumulation = 0.0f;
-	m_PhaseAccumulated = false;
 
 	m_TargetToSourceSourceIncr = 0.0f;
 	// if downsampling from source to target, we'll be on the tail end of each "sample", so we set the source incr to be too
