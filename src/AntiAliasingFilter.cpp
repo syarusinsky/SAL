@@ -1,5 +1,7 @@
 #include "AntiAliasingFilter.hpp"
 
+#define _USE_MATH_DEFINES
+
 #include <stdint.h>
 #include <cmath>
 

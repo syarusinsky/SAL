@@ -1,6 +1,10 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+
 #include "AudioConstants.hpp"
 #include <cmath>
 
