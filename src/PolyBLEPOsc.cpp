@@ -1,5 +1,7 @@
 #include "PolyBLEPOsc.hpp"
 
+#define _USE_MATH_DEFINES
+
 #include "AudioConstants.hpp"
 #include <limits>
 #include <cmath>
