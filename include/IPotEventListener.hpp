@@ -11,13 +11,15 @@
 class PotEvent : public IEvent
 {
 	public:
-		PotEvent (float percentage, unsigned int channel);
+		PotEvent (float percentage, unsigned int channel, bool skipStabilization = false);
 		~PotEvent() override;
 
 		float getPercentage() const { return m_Percentage; }
+		bool skipStabilization() const { return m_SkipStabilization; }
 
 	private:
 		float m_Percentage;
+		bool m_SkipStabilization;
 };
 
 class IPotEventListener : public IEventListener

@@ -3,9 +3,10 @@
 // instantiating IPotEventListener's event dispatcher
 EventDispatcher<IPotEventListener, PotEvent, &IPotEventListener::onPotEvent> IPotEventListener::m_EventDispatcher;
 
-PotEvent::PotEvent (float percentage, unsigned int channel) :
+PotEvent::PotEvent (float percentage, unsigned int channel, bool skipStabilization) :
 	IEvent( channel ),
-	m_Percentage( std::max(std::min(percentage, 1.0f), 0.0f) ) // ensure between 0 and 1
+	m_Percentage( std::max(std::min(percentage, 1.0f), 0.0f) ), // ensure between 0 and 1
+	m_SkipStabilization( skipStabilization )
 {
 }
 

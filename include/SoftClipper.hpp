@@ -27,8 +27,8 @@ class SoftClipper : public IBufferCallback<T>
 		inline T processSample (T sampleVal)
 		{
 			constexpr float peakVal = ( use12Bit ) ? 4095.0f : 65535.0f;
-			constexpr float halfVal = ( use12Bit ) ? 2047.0f : 32767.0f;
-			constexpr unsigned int halfValUInt = ( use12Bit ) ? 2047 : 32767;
+			constexpr float halfVal = ( use12Bit ) ? 2048.0f : 32768.0f;
+			constexpr unsigned int halfValUInt = ( use12Bit ) ? 2047 : 32768;
 
 			float tempVal = sampleVal;
 			if constexpr ( std::is_same<T, uint16_t>::value )
@@ -49,11 +49,11 @@ class SoftClipper : public IBufferCallback<T>
 
 			if constexpr ( std::is_same<T, uint16_t>::value )
 			{
-				sampleVal = static_cast<uint16_t>( (tempVal + 1.0f) * peakVal );
+				sampleVal = static_cast<uint16_t>( (tempVal + 1.0f) * halfVal );
 			}
 			else if constexpr ( std::is_same<T, int16_t>::value )
 			{
-				sampleVal = static_cast<uint16_t>( tempVal * halfVal );
+				sampleVal = static_cast<int16_t>( tempVal * halfVal );
 			}
 			else
 			{

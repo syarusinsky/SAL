@@ -36,7 +36,7 @@ void MidiHandler::processByte (uint8_t byte)
 		midiMessageBytes[0] = byte;
 		m_WorkingMessageNumDataBytes = 0;
 
-		if ( statusByteNybble != MIDI_SYSTEM_COMMON ) // if MIDI channel message
+		if ( statusByteNybble != MIDI_SYSTEM_STATUS_BYTE ) // if MIDI channel message
 		{
 			switch ( statusByteNybble )
 			{
@@ -65,7 +65,7 @@ void MidiHandler::processByte (uint8_t byte)
 					break;
 			}
 		}
-		else // if MIDI System Common or Realtime Message
+		else // if MIDI System Exclusive, MIDI System Common or Realtime Message
 		{
 			switch (m_WorkingStatusByte)
 			{

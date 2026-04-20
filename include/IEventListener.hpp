@@ -26,15 +26,31 @@
  * An IEventListener class should include the IEvent subclass and
  * the IEventListener subclass in the hpp file, and the
  * instantiation of the EventDispatcher in the cpp file.
+ *
+ * The VST_BUILD stuff is for use with VST plugins. Since VST
+ * plugins execute their UIs on a single thread, there's an issue
+ * with the fact that EventDispatcher is a static member variable
+ * and all instances of the plugin will get the event. To fix this
+ * the JUCE PluginProcessor and PluginProcessorEditor objects must
+ * hold unique ids which will be used to send events only to the
+ * event listeners they instantiated. For an example, look at
+ * Aki-delay and look for the dispatchEventsForIds function, which
+ * is called at the end of any function that might publish events.
 *****************************************************************/
 
 #include <functional>
 #include <set>
 
+#ifdef VST_BUILD
+#include <deque>
+#include <mutex>
+#include <unordered_map>
+#endif
+
 class IEvent
 {
 	public:
-		IEvent (unsigned int channel) : m_Channel (channel) {}
+		IEvent (unsigned int channel) : m_Channel( channel ) {}
 		virtual ~IEvent() {}
 
 		unsigned int getChannel() const { return m_Channel; }
@@ -47,7 +63,33 @@ class IEvent
 class IEventListener
 {
 	public:
+#ifdef VST_BUILD
+		IEventListener() : m_ThisJuceProcessorId( m_GlobalJuceProcessorId ) {}
+#endif
 		virtual ~IEventListener() {}
+#ifdef VST_BUILD
+		// this should be called at the end of the plugin processor's constructor and at the end of the
+		// plugin processor editor's construcot
+		static unsigned int getGlobalJuceProcessorId()
+		{
+			unsigned int globalJuceProcessorId = m_GlobalJuceProcessorId;
+			m_GlobalJuceProcessorId++; // increment for the next plugin processor
+
+			return globalJuceProcessorId;
+		}
+
+		unsigned int getThisJuceProcessorId()
+		{
+			return m_ThisJuceProcessorId;
+		}
+
+	private:
+		unsigned int m_ThisJuceProcessorId;
+		// since juce instantiates each plugin processor sequentially, we use this global id
+		// to assign an id to each instance of event listener per plugin processor and per plugin
+		// editor
+		static inline unsigned int m_GlobalJuceProcessorId = 0;
+#endif
 };
 
 template <typename ListenerType, typename EventType, void (ListenerType::*ListenerFunction)(const EventType&)>
@@ -69,25 +111,107 @@ class EventDispatcher
 
 		void bind (ListenerType* listener)
 		{
+#ifdef VST_BUILD
+			std::lock_guard<std::mutex> lock( m_JuceEventQueueMutex );
+			m_JuceListenersMap.emplace( listener->getThisJuceProcessorId(), listener );
+#else
 			m_Listeners.insert( listener );
+#endif
 		}
 
 		void unbind (ListenerType* listener)
 		{
+#ifdef VST_BUILD
+			std::lock_guard<std::mutex> lock( m_JuceEventQueueMutex );
+			auto listenersRange = m_JuceListenersMap.equal_range( listener->getThisJuceProcessorId() );
+
+			for ( auto listenersIt = listenersRange.first; listenersIt != listenersRange.second; listenersIt++ )
+			{
+				auto* eventListener = listenersIt->second;
+				if ( eventListener == listener )
+				{
+					m_JuceListenersMap.erase( listenersIt );
+				}
+			}
+#else
 			m_Listeners.erase( listener );
+#endif
 		}
 
 		void dispatch (const EventType& event)
 		{
+#ifdef VST_BUILD
+			// just queueing up the event for the juce dispatch function,
+			// which should be called at the end of any ui input processing and at
+			// the end of the processBlock
+			std::lock_guard<std::mutex> lock( m_JuceEventQueueMutex );
+			m_JuceEventQueue.push_back( event );
+#else
 			for ( ListenerType* eventListener : m_Listeners )
 			{
 				m_Func( eventListener, event );
 			}
+#endif
 		}
 
+#ifdef VST_BUILD
+		// this function may need to be called more than one time if the handling of this function for a different event listener dispatches
+		// new events to this event listener's event queue
+		static void juceDispatchQueuedEvents (const unsigned int processorId, const unsigned int processorEditorId)
+		{
+			std::lock_guard<std::mutex> lock( m_JuceEventQueueMutex );
+			auto eventIt = m_JuceEventQueue.begin();
+
+			while ( eventIt != m_JuceEventQueue.end() )
+			{
+				bool handled = false;
+				auto listenersRange = m_JuceListenersMap.equal_range( processorId );
+
+				for ( auto listenersIt = listenersRange.first; listenersIt != listenersRange.second; listenersIt++ )
+				{
+					auto* eventListener = listenersIt->second;
+					const unsigned int eventListenerId = eventListener->getThisJuceProcessorId();
+					if ( eventListenerId == processorId )
+					{
+						(eventListener->*ListenerFunction)( *eventIt );
+						handled = true;
+					}
+				}
+
+				listenersRange = m_JuceListenersMap.equal_range( processorEditorId );
+
+				for ( auto listenersIt = listenersRange.first; listenersIt != listenersRange.second; listenersIt++ )
+				{
+					auto* eventListener = listenersIt->second;
+					const unsigned int eventListenerId = eventListener->getThisJuceProcessorId();
+					if ( eventListenerId == processorEditorId )
+					{
+						(eventListener->*ListenerFunction)( *eventIt );
+						handled = true;
+					}
+				}
+
+				if ( handled )
+				{
+					eventIt = m_JuceEventQueue.erase( eventIt );
+				}
+				else
+				{
+					eventIt++;
+				}
+			}
+		}
+#endif
+
 	private:
-		std::function<void(ListenerType*, const EventType&)> 	m_Func;
-		std::set<ListenerType*> 				m_Listeners;
+		std::function<void(ListenerType*, const EventType&)> 			m_Func;
+#ifdef VST_BUILD
+		static inline std::deque<EventType> 					m_JuceEventQueue;
+		static inline std::mutex 						m_JuceEventQueueMutex;
+		static inline std::unordered_multimap<unsigned int, ListenerType*> 	m_JuceListenersMap;
+#else
+		std::set<ListenerType*> 						m_Listeners;
+#endif
 };
 
 #endif // IEVENTLISTENER_HPP
