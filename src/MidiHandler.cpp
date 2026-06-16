@@ -1,21 +1,26 @@
 #include "MidiHandler.hpp"
 #include "IKeyEventListener.hpp"
 #include "IPitchEventListener.hpp"
+#include "ISalSysexEventListener.hpp"
 
 #include <cmath>
+#include <algorithm>
 
 
 MidiHandler::MidiHandler() :
 	m_WorkingStatusByte( 0 ),
 	m_WorkingMessageNumDataBytes( 0 ),
 	m_WorkingDataByteIndex( 0 ),
-	m_CurrentWriteIndex( 0 ),
-	m_CurrentReadIndex( 0 ),
-	m_ShouldPublishMidi( true ),
+	m_InputCurrentWriteIndex( 0 ),
+	m_InputCurrentReadIndex( 0 ),
+	m_ShouldPublishMidi( false ),
 	m_ShouldPublishNoteOn( true ),
 	m_ShouldPublishNoteOff( true ),
 	m_ShouldPublishPitch( true ),
-	m_SemitonesToPitchBend( 1 )
+	m_ShouldPublishSalSysex( true ),
+	m_SemitonesToPitchBend( 1 ),
+	m_OutputCurrentWriteIndex( 0 ),
+	m_OutputCurrentReadIndex( 0 )
 {
 }
 
@@ -30,7 +35,7 @@ void MidiHandler::processByte (uint8_t byte)
 		m_WorkingStatusByte = byte;
 		uint8_t statusByteNybble = (m_WorkingStatusByte >> 4);
 
-		MidiEvent* midiEvent = &m_MsgBuffer[m_CurrentWriteIndex];
+		MidiEvent* midiEvent = &m_MsgInputBuffer[m_InputCurrentWriteIndex];
 		midiEvent->setValid( false );
 		uint8_t* midiMessageBytes = midiEvent->getRawData();
 		midiMessageBytes[0] = byte;
@@ -82,8 +87,18 @@ void MidiHandler::processByte (uint8_t byte)
 					m_WorkingMessageNumDataBytes = MIDI_TUNE_REQUEST_NUM_DATA;
 					break;
 				case MIDI_END_OF_EXCLUSIVE:
-					m_WorkingMessageNumDataBytes = MIDI_END_OF_EXCLUSIVE_NUM_DATA;
-					break;
+				{
+					// finish the previous midi system exclusive message
+					const unsigned int sysexMsgIndex = (m_InputCurrentWriteIndex - 1 + MIDI_BUFFER_SIZE) % MIDI_BUFFER_SIZE;
+					midiEvent = &m_MsgInputBuffer[sysexMsgIndex];
+					midiMessageBytes = midiEvent->getRawData();
+					m_WorkingDataByteIndex++;
+					midiMessageBytes[m_WorkingDataByteIndex] = byte;
+					midiEvent->setValid( true );
+					midiEvent->setNumBytes( m_WorkingDataByteIndex + 1 );
+				}
+
+					return;
 				case MIDI_TIMING_CLOCK:
 					m_WorkingMessageNumDataBytes = MIDI_TIMING_CLOCK_NUM_DATA;
 					break;
@@ -103,12 +118,15 @@ void MidiHandler::processByte (uint8_t byte)
 					m_WorkingMessageNumDataBytes = MIDI_RESET;
 					break;
 				default:
+					// this will be the case with a midi system exclusive message
+					m_WorkingMessageNumDataBytes = MAX_MIDI_MESSAGE_SIZE - 1;
+
 					break;
 			}
 		}
 
 		m_WorkingDataByteIndex = 0;
-		m_CurrentWriteIndex = (m_CurrentWriteIndex + 1) % MIDI_BUFFER_SIZE;
+		m_InputCurrentWriteIndex = (m_InputCurrentWriteIndex + 1) % MIDI_BUFFER_SIZE;
 
 		// some messages have no data bytes
 		if ( m_WorkingDataByteIndex == m_WorkingMessageNumDataBytes)
@@ -119,7 +137,7 @@ void MidiHandler::processByte (uint8_t byte)
 	}
 	else // if data byte
 	{
-		MidiEvent* midiEvent = &m_MsgBuffer[(m_CurrentWriteIndex - 1 + MIDI_BUFFER_SIZE) % MIDI_BUFFER_SIZE];
+		MidiEvent* midiEvent = &m_MsgInputBuffer[(m_InputCurrentWriteIndex - 1 + MIDI_BUFFER_SIZE) % MIDI_BUFFER_SIZE];
 		uint8_t* midiMessageBytes = midiEvent->getRawData();
 		m_WorkingDataByteIndex++;
 
@@ -136,9 +154,9 @@ void MidiHandler::processByte (uint8_t byte)
 		else
 		{
 			// in case of a running midi message, eg: a note data byte is receieved after a full note on midi message
-			m_CurrentWriteIndex = (m_CurrentWriteIndex + 1) % MIDI_BUFFER_SIZE;
+			m_InputCurrentWriteIndex = (m_InputCurrentWriteIndex + 1) % MIDI_BUFFER_SIZE;
 
-			midiEvent = &m_MsgBuffer[(m_CurrentWriteIndex - 1 + MIDI_BUFFER_SIZE) % MIDI_BUFFER_SIZE];
+			midiEvent = &m_MsgInputBuffer[(m_InputCurrentWriteIndex - 1 + MIDI_BUFFER_SIZE) % MIDI_BUFFER_SIZE];
 			midiEvent->setValid( false );
 			midiMessageBytes = midiEvent->getRawData();
 
@@ -155,14 +173,14 @@ void MidiHandler::processByte (uint8_t byte)
 	}
 }
 
-MidiEvent* MidiHandler::nextMidiMessage()
+MidiEvent* MidiHandler::nextInputMidiMessage()
 {
 	MidiEvent* retVal = nullptr;
 
-	if ( m_CurrentReadIndex != m_CurrentWriteIndex && m_MsgBuffer[m_CurrentReadIndex].isValid() )
+	if ( m_InputCurrentReadIndex != m_InputCurrentWriteIndex && m_MsgInputBuffer[m_InputCurrentReadIndex].isValid() )
 	{
-		retVal = &(m_MsgBuffer[m_CurrentReadIndex]);
-		m_CurrentReadIndex = (m_CurrentReadIndex + 1) % MIDI_BUFFER_SIZE;
+		retVal = &(m_MsgInputBuffer[m_InputCurrentReadIndex]);
+		m_InputCurrentReadIndex = (m_InputCurrentReadIndex + 1) % MIDI_BUFFER_SIZE;
 	}
 
 	return retVal;
@@ -170,7 +188,7 @@ MidiEvent* MidiHandler::nextMidiMessage()
 
 void MidiHandler::dispatchEvents()
 {
-	MidiEvent* nextMidiEvent = this->nextMidiMessage();
+	MidiEvent* nextMidiEvent = this->nextInputMidiMessage();
 
 	while ( nextMidiEvent != nullptr )
 	{
@@ -201,9 +219,13 @@ void MidiHandler::dispatchEvents()
 		{
 			IKeyEventListener::PublishEvent( KeyEvent(KeyPressedEnum::RELEASED, midiRawData[1], midiRawData[2], midiRawData[0] & 0b1111) );
 		}
+		else if ( m_ShouldPublishSalSysex && midiEvent.isSalSysex() )
+		{
+			ISalSysexEventListener::PublishEvent( SalSysexEvent(midiRawData) );
+		}
 
 		// get next MIDI message in the queue and continue while loop
-		nextMidiEvent = this->nextMidiMessage();
+		nextMidiEvent = this->nextInputMidiMessage();
 	}
 }
 
@@ -215,4 +237,57 @@ void MidiHandler::setNumberOfSemitonesToPitchBend (unsigned int numSemitones)
 unsigned int MidiHandler::getNumberOfSemitonesToPitchBend()
 {
 	return m_SemitonesToPitchBend;
+}
+
+void MidiHandler::processKeyEvent (const KeyEvent& keyEvent)
+{
+	const uint8_t statusByte = keyEvent.getChannel()
+		| ( (keyEvent.pressed() == KeyPressedEnum::PRESSED) ? MIDI_NOTE_ON << 4 : MIDI_NOTE_OFF << 4 );
+	const uint8_t dataByte1 = static_cast<uint8_t>( keyEvent.note() );
+	const uint8_t dataByte2 = static_cast<uint8_t>( keyEvent.velocity() );
+
+	MidiEvent* midiEvent = &m_MsgOutputBuffer[m_OutputCurrentWriteIndex];
+	new (midiEvent) MidiEvent( statusByte, dataByte1, dataByte2, true );
+
+	m_OutputCurrentWriteIndex = ( m_OutputCurrentWriteIndex + 1 ) % MIDI_BUFFER_SIZE;
+}
+
+void MidiHandler::processPitchEvent (const PitchEvent& pitchEvent)
+{
+	const uint8_t statusByte = pitchEvent.getChannel() | ( MIDI_PITCH_BEND << 4 );
+
+	const float pitchBendNormalized = ( log2f(pitchEvent.getPitchFactor()) * 12.0f ) / static_cast<float>(m_SemitonesToPitchBend);
+	const float pitchBendValFloat = ( (pitchBendNormalized + 1.0f) / 2.0f ) * 16383.0f;
+
+	// clamp to 14 bits and round to be safe
+	const int pitchBendVal = std::clamp( static_cast<int>(std::round(pitchBendValFloat)), 0, 16383 );
+
+	const uint8_t lsb = static_cast<uint8_t>(pitchBendVal & 0x7F);
+	const uint8_t msb = static_cast<uint8_t>((pitchBendVal >> 7) & 0x7F);
+
+	MidiEvent* midiEvent = &m_MsgOutputBuffer[m_OutputCurrentWriteIndex];
+	new (midiEvent) MidiEvent( statusByte, lsb, msb, true );
+
+	m_OutputCurrentWriteIndex = ( m_OutputCurrentWriteIndex + 1 ) % MIDI_BUFFER_SIZE;
+}
+
+void MidiHandler::processSalSysexEvent (const SalSysexEvent& salSysex)
+{
+	MidiEvent* midiEvent = &m_MsgOutputBuffer[m_OutputCurrentWriteIndex];
+	new (midiEvent) MidiEvent( static_cast<unsigned int>(salSysex.getSizeInBytes()), true, salSysex.getRawData() );
+
+	m_OutputCurrentWriteIndex = ( m_OutputCurrentWriteIndex + 1 ) % MIDI_BUFFER_SIZE;
+}
+
+MidiEvent* MidiHandler::nextOutputMidiMessage()
+{
+	MidiEvent* retVal = nullptr;
+
+	if ( m_OutputCurrentReadIndex != m_OutputCurrentWriteIndex && m_MsgOutputBuffer[m_OutputCurrentReadIndex].isValid() )
+	{
+		retVal = &(m_MsgOutputBuffer[m_OutputCurrentReadIndex]);
+		m_OutputCurrentReadIndex = (m_OutputCurrentReadIndex + 1) % MIDI_BUFFER_SIZE;
+	}
+
+	return retVal;
 }

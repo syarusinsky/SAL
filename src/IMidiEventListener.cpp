@@ -1,6 +1,8 @@
 #include "IMidiEventListener.hpp"
 
 #include <cstdarg>
+#include <cstring>
+
 
 // instantiating IMidiEventListener's event dispatcher
 EventDispatcher<IMidiEventListener, MidiEvent, &IMidiEventListener::onMidiEvent> IMidiEventListener::m_EventDispatcher;
@@ -28,6 +30,8 @@ MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, bool valid) :
 	m_Valid( valid ),
 	m_NumBytes( 2 )
 {
+	static_assert(!std::is_pointer_v<decltype(valid)>,
+			"The 'valid' argument must not be a pointer type for the two byte midi event constructor");
 	m_Bytes[0] = byte1;
 	m_Bytes[1] = byte2;
 }
@@ -43,12 +47,26 @@ MidiEvent::MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3, bool valid) :
 	m_Bytes[2] = byte3;
 }
 
-MidiEvent::MidiEvent (unsigned int numBytes, uint8_t bytes...) :
+MidiEvent::MidiEvent (unsigned int numBytes, bool valid, const uint8_t* bytes) :
 	IEvent( 0 ),
 	m_Bytes{ 0 },
-	m_Valid( true ),
+	m_Valid( valid ),
 	m_NumBytes( numBytes )
 {
+
+	static_assert(std::is_pointer_v<decltype(bytes)>,
+			"The 'bytes' argument must be a pointer type for the raw data midi event constructor");
+	std::memcpy( m_Bytes, bytes, m_NumBytes );
+}
+
+MidiEvent::MidiEvent (unsigned int numBytes, bool valid, uint8_t bytes...) :
+	IEvent( 0 ),
+	m_Bytes{ 0 },
+	m_Valid( valid ),
+	m_NumBytes( numBytes )
+{
+	static_assert(!std::is_pointer_v<decltype(bytes)>,
+			"The 'bytes' argument must not be a pointer type for the variadic midi event constructor");
 	va_list args;
 	va_start( args, bytes );
 
@@ -104,6 +122,17 @@ bool MidiEvent::isNoteOff() const
 bool MidiEvent::isPitchBend() const
 {
 	if ( (m_Bytes[0] >> 4) == MIDI_PITCH_BEND )
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool MidiEvent::isSalSysex() const
+{
+	// assuming that if it's using the hobby manufacturer id, it must be a sal device
+	if ( m_Bytes[0] == MIDI_SYSTEM_EXCLUSIVE && m_Bytes[1] == MIDI_SYSEX_HOBBY_MANUFACTURER_ID )
 	{
 		return true;
 	}

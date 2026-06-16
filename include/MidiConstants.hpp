@@ -7,11 +7,12 @@
 ******************************************************/
 
 
-#define MAX_MIDI_MESSAGE_SIZE      8
+#define MAX_MIDI_MESSAGE_SIZE      16
 #define MIDI_BUFFER_SIZE           12
 #define MIDI_STATUS_BYTE           0b10000000
 #define MIDI_DATA_BYTE             0b00000000
 #define MIDI_SYSTEM_STATUS_BYTE    0b1111
+#define MIDI_SYSEX_HOBBY_MANUFACTURER_ID 0x7D
 
 // MIDI Channel Messages
 

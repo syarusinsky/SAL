@@ -18,7 +18,8 @@ class MidiEvent : public IEvent
 		MidiEvent (uint8_t byte1, bool valid = false);
 		MidiEvent (uint8_t byte1, uint8_t byte2, bool valid = false);
 		MidiEvent (uint8_t byte1, uint8_t byte2, uint8_t byte3, bool valid = false);
-		MidiEvent (unsigned int numBytes, uint8_t bytes...);
+		MidiEvent (unsigned int numBytes, bool valid, const uint8_t* bytes);
+		MidiEvent (unsigned int numBytes, bool valid, uint8_t bytes...);
 		~MidiEvent();
 
 		void setChannel (unsigned int channel) override;
@@ -30,6 +31,7 @@ class MidiEvent : public IEvent
 		bool isPitchBend() const;
 		bool isPolyphonicAftertouch() const;
 		bool isControlChange() const;
+		bool isSalSysex() const;
 
 		bool isValid() const;
 		void setValid (bool valid);
