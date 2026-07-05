@@ -11,7 +11,7 @@
 // for calculating filter coefficients of the form ( (1.0f - m_Coefficient) * oldValue ) + ( m_Coefficient * newValue );
 inline float getFilterCoeff (float timeInMs)
 {
-	return ( 1.0f - static_cast<float>(pow(static_cast<float>(M_E), (-2.2f * SAMPLE_PERIOD) / (timeInMs / 1000.0f))) ) * 2.0f;
+	return ( 1.0f - static_cast<float>(powf(static_cast<float>(M_E), (-2.2f * SAMPLE_PERIOD) / (timeInMs / 1000.0f))) ) * 2.0f;
 }
 
 #endif // COMMON_HPP
