@@ -127,7 +127,6 @@ class EventDispatcher
 
 			for ( auto listenersIt = listenersRange.first; listenersIt != listenersRange.second; )
 			{
-				numListenersInRange++;
 				auto* eventListener = listenersIt->second;
 				if ( eventListener == listener )
 				{
