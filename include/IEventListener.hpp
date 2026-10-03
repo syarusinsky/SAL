@@ -125,12 +125,17 @@ class EventDispatcher
 			std::lock_guard<std::mutex> lock( m_JuceEventQueueMutex );
 			auto listenersRange = m_JuceListenersMap.equal_range( listener->getThisJuceProcessorId() );
 
-			for ( auto listenersIt = listenersRange.first; listenersIt != listenersRange.second; listenersIt++ )
+			for ( auto listenersIt = listenersRange.first; listenersIt != listenersRange.second; )
 			{
+				numListenersInRange++;
 				auto* eventListener = listenersIt->second;
 				if ( eventListener == listener )
 				{
-					m_JuceListenersMap.erase( listenersIt );
+					listenersIt = m_JuceListenersMap.erase( listenersIt );
+				}
+				else
+				{
+					listenersIt++;
 				}
 			}
 #else
